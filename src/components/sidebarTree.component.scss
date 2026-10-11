@@ -31,6 +31,26 @@ sidebar-plus-tree[hidden] {
     display: none;
 }
 
+// The macOS traffic lights (#13, see `macInset` in the component): a strip as
+// tall as the tab bar on top, so the first row starts below the window
+// buttons. Taken from the `:host(.mac-inset)` rule of Tabby's own profile
+// tree, drag region included: the strip stands in for the title bar this
+// frame does not have, and the window has to stay movable from it.
+// `--tabs-height` is set by Tabby on <app-root>, which this sidebar sits in.
+sidebar-plus-tree.sidebar-plus-mac-inset {
+    padding-top: var(--tabs-height);
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--tabs-height);
+        -webkit-app-region: drag;
+    }
+}
+
 // Scoped to the component's own tag, not left as a bare `input` selector.
 // This stylesheet is injected as plain global CSS (see the note above), so an
 // unqualified `input { ... }` restyled every text field in Tabby — settings,

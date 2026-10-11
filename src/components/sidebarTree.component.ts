@@ -11,9 +11,12 @@ import {
     AppService,
     BaseTabComponent,
     ConfigService,
+    HostAppService,
+    HostWindowService,
     HotkeysService,
     NotificationsService,
     PartialProfile,
+    Platform,
     PlatformService,
     PartialProfileGroup,
     Profile,
@@ -501,6 +504,8 @@ export class SidebarPlusTreeComponent implements OnInit, OnDestroy, AfterViewChe
         private ngbModal: NgbModal,
         private zone: NgZone,
         private platform: PlatformService,
+        private hostApp: HostAppService,
+        private hostWindow: HostWindowService,
         private hotkeys: HotkeysService,
         private ping: SidebarPlusPingService,
         private visibility: SidebarPlusVisibilityService,
@@ -1844,6 +1849,24 @@ export class SidebarPlusTreeComponent implements OnInit, OnDestroy, AfterViewChe
     @HostBinding('class.sidebar-plus-wrap-names')
     get wrapNames (): boolean {
         return this.config.store.sidebarPlus?.wrapNames ?? false
+    }
+
+    /**
+     * Room for the macOS traffic lights (#13). With the "thin" frame the
+     * window has no title bar, and the three window buttons are drawn over its
+     * top left corner, which is where this sidebar sits: they covered its
+     * first row of buttons.
+     *
+     * The same condition Tabby uses to give its own profile tree the
+     * `mac-inset` strip (appRoot.component.pug, checked on 1.0.238), so the
+     * two agree on when the lights are there. Fullscreen hides them, and the
+     * other frames draw a real title bar above the whole window.
+     */
+    @HostBinding('class.sidebar-plus-mac-inset')
+    get macInset (): boolean {
+        return this.hostApp.platform === Platform.macOS
+            && !this.hostWindow.isFullscreen
+            && this.config.store.appearance?.frame === 'thin'
     }
 
     @HostBinding('style.width.px')

@@ -24,3 +24,19 @@ body.sidebar-plus-hide-native-transfers {
         display: none !important;
     }
 }
+
+// The gap Tabby leaves at the start of its tab bar for the macOS traffic
+// lights (#13). Once this sidebar takes the top left corner and leaves room for
+// the lights itself, that gap sits next to the sidebar for nothing. Tabby drops
+// it the same way when its own profile tree is shown (`!showProfileTree` on
+// `.inset` in appRoot.component.pug).
+//
+// Keyed on the sidebar itself rather than on a class of `body`: the rule then
+// follows every way the sidebar can leave the corner (plugin off, unmounted,
+// hidden by the toggle hotkey, fullscreen, another frame) with nothing to keep
+// in step. Only the display is set, which Tabby's own encapsulated rule for
+// this element (width, height, drag region) never touches.
+body:has(sidebar-plus-tree.sidebar-plus-mac-inset:not([hidden])) .tab-bar > .inset {
+    display: none;
+}
+
