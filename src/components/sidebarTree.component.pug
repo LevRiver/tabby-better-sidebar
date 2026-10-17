@@ -374,6 +374,13 @@
                 )
                     ng-container(*ngIf='!group.collapsed')
                         ng-container(*ngFor='let profile of group.profiles')
+                            //- Indented by two steps, not one (#14): a folder
+                            //- row is a chevron then an icon, so one step put a
+                            //- profile's icon in the very column of its own
+                            //- folder's icon, and it read as that folder's
+                            //- sibling. Two steps line it up with the icons of
+                            //- the sub-folders, the other children of the same
+                            //- folder.
                             a.tree-item(
                                 cdkDrag,
                                 cdkDragPreviewClass='sidebar-plus-drag-preview',
@@ -388,7 +395,7 @@
                                 (click)='onProfileClick(profile, group, $event)',
                                 (dblclick)='launchProfile(profile)',
                                 (contextmenu)='onProfileContextMenu($event, profile)',
-                                [style.paddingLeft.px]='(depth + 1) * 20',
+                                [style.paddingLeft.px]='(depth + 2) * 20',
                                 href='#'
                             )
                                 //- Custom preview so a multi-selection drag
