@@ -50,8 +50,8 @@ Ce qu'un chantier livré laisse malgré tout ouvert est isolé dans
 <tr><td><a href="annexes/REALISE.html#issue-12-raccourci">Raccourci afficher/masquer la sidebar (issue #12)</a></td><td><span class="pill done">✅ Livré en 1.0.7 (2026-10-09)</span></td><td></td></tr>
 <tr><td><a href="annexes/REALISE.html#issue-10-titres-longs">Titres longs sur plusieurs lignes (issue #10)</a></td><td><span class="pill done">✅ Livré en 1.0.7 (2026-10-09)</span></td><td></td></tr>
 <tr><td><a href="annexes/REALISE.html#issue-8-filtre-actifs">Filtre « Actifs » (issue #8)</a></td><td><span class="pill done">✅ Livré en 1.0.7 (2026-10-09)</span></td><td></td></tr>
-<tr><td><a href="#issue-13-feux-macos">Feux de fenêtre macOS sur la sidebar (issue #13)</a></td><td><span class="pill progress">🔧 Fusionné sans test (pas de Mac), publication retenue (2026-10-17)</span></td><td>1.0.8</td></tr>
-<tr><td><a href="#issue-14-indentation">Indentation des profils dans les dossiers (issue #14)</a></td><td><span class="pill progress">🔧 Codé, test manuel dans Tabby à faire (2026-10-17)</span></td><td>1.0.8</td></tr>
+<tr><td><a href="annexes/REALISE.html#issue-13-feux-macos">Feux de fenêtre macOS sur la sidebar (issue #13)</a></td><td><span class="pill done">✅ Livré en 1.0.8 (2026-10-17)</span></td><td></td></tr>
+<tr><td><a href="annexes/REALISE.html#issue-14-indentation">Indentation des profils dans les dossiers (issue #14)</a></td><td><span class="pill done">✅ Livré en 1.0.8 (2026-10-17)</span></td><td></td></tr>
 <tr><td><a href="annexes/REALISE.html#pr-ogkaktus">PR #5, #6, #7 d'OGKaktus (tri SFTP, textes en dur, favoris SFTP)</a></td><td><span class="pill done">✅ Livré — 1.0.6 (2026-10-08)</span></td><td>—</td></tr>
 <tr><td><a href="#changelog">CHANGELOG.md du dépôt</a></td><td><span class="pill done">✅ Fait — introduit avec la 1.0.3 (2026-08-14)</span></td><td>À tenir à chaque publication</td></tr>
 <tr><td><a href="#x11">Intégration X11</a></td><td><span class="pill out">⛔ Écarté — déjà natif</span></td><td>—</td></tr>
@@ -170,6 +170,10 @@ lire le même fait.</p>
     (<code>PROVENANCE.md</code>, encore en <code>1.0.231-nightly.0</code>) — <code>cwd</code>,
     <code>rememberCwd</code> et <code>term</code> doivent être le seul écart.</td>
     <td><a href="annexes/REALISE.html#tabby-1-0-236">Compatibilité Tabby 1.0.236</a></td><td>✅ Fait (2026-10-09), recopiés depuis Tabby 1.0.238</td></tr>
+
+<tr><td>Valider la bande des feux de fenêtre sur un vrai Mac : cadre thin, onglets en haut puis à
+    gauche, plein écran, Alt+B. Demandé au rapporteur de l'issue.</td>
+    <td><a href="annexes/REALISE.html#issue-13-feux-macos">Feux de fenêtre macOS (issue #13)</a></td><td>Jamais exercé (pas de Mac)</td></tr>
 </table>
 
 <div class="callout warning"><span class="callout-title">Ce qui ressemble à un reste et n'en est pas
@@ -687,37 +691,7 @@ avec la prochaine publication, pour que la version qui l'introduit le mentionne.
 <h2 id="issues-1-0-8">Demandes d'utilisateurs : issues #13 et #14</h2>
 <p>Deux issues codées par la session cloud sur deux branches parties de master <code>bf7be12</code>, un
 commit chacune, fichiers distincts. Vérification, test et publication sur le poste, comme pour la 1.0.7.
-Publication groupée visée en 1.0.8.</p>
-
-<h3 id="issue-13-feux-macos">Feux de fenêtre macOS sur la sidebar (issue #13) <span class="pill progress">🔧 Fusionné sans test (pas de Mac), publication retenue (2026-10-17)</span></h3>
-<p>Constat : avec le cadre « thin » de Tabby, la fenêtre macOS n'a pas de barre de titre ; les trois
-boutons de fenêtre sont dessinés sur son coin haut gauche, là où la sidebar est montée, et couvraient sa
-première rangée de boutons.</p>
-<p><strong>Codé le 2026-10-11</strong> (branche <code>claude/issue-13-macos-traffic-lights</code>,
-<code>8e41482</code>), <strong>fusionné le 2026-10-17</strong> en avance rapide : classe
-<code>sidebar-plus-mac-inset</code> sur l'hôte, posée à la même condition que la classe
-<code>mac-inset</code> de l'arbre de profils natif (macOS, cadre thin, hors plein écran ;
-<code>appRoot.component.pug</code>, vérifié sur 1.0.238) ; bande de hauteur <code>--tabs-height</code> en
-haut, zone de déplacement de la fenêtre ; l'espace <code>.tab-bar &gt; .inset</code> de Tabby masqué via
-<code>:has</code> tant que la sidebar occupe le coin, rendu dès qu'elle est éteinte, masquée par Alt+B ou
-en plein écran.</p>
-<p class="muted">Fusionné sans test à la demande de l'utilisateur, qui n'a pas de Mac ; le README pose
-déjà que macOS n'est pas testé. Build vert (12 avertissements habituels). Sous Windows la classe ne
-s'applique jamais et le sélecteur ne correspond à rien. Reste ouvert : validation sur un vrai Mac
-(cadre thin, onglets en haut puis à gauche, plein écran, Alt+B), à demander au rapporteur de l'issue.</p>
-
-<h3 id="issue-14-indentation">Indentation des profils dans les dossiers (issue #14) <span class="pill progress">🔧 Codé, test manuel dans Tabby à faire (2026-10-17)</span></h3>
-<p>Demande : l'icône d'un profil tombe dans la colonne de l'icône de son propre dossier, ce qui brouille la
-hiérarchie. Correctif d'une ligne dans <code>sidebarTree.component.pug</code> (branche
-<code>claude/issue-14-profile-indent</code>, <code>8c63587</code>) : le <code>paddingLeft</code> des lignes
-de profil passe de <code>(depth + 1) * 20</code> à <code>(depth + 2) * 20</code>, l'icône s'aligne alors
-sur celle des sous-dossiers du même dossier.</p>
-<p class="muted">Test retenu : Tabby est en cours d'utilisation sur le poste, aucune relance sans l'accord
-de l'utilisateur. À vérifier : arborescence de l'issue (Layer 1 &gt; Layer 2, un profil dans chacun, en
-groupes et profils jetables <code>grp-zzz-test-*</code>) ; « Épinglés » et résultats de recherche
-indentés de deux crans ; glisser-déposer (profil vers dossier, réordonnancement, imbrication) ; sidebar à
-sa largeur minimale ; <code>wrapNames</code> allumé. Validé : fusion et publication avec #13 en 1.0.8.
-Sinon : #13 publié seul.</p>
+Les deux sont parties en 1.0.8 le 2026-10-17 ; leurs fiches sont au registre.</p>
 
 <h2>Hors périmètre</h2>
 

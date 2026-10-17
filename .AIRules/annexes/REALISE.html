@@ -21,6 +21,35 @@ daté de chaque livraison est dans le <a href="../AI-HISTORY.html">journal</a>. 
 post-livraison s'ajoutent ici en une ligne chacune ; dès qu'une évolution touche l'architecture,
 une convention ou plus d'un fichier, elle rouvre un chantier dans l'actif.</p>
 
+<h3 id="issue-13-feux-macos">Feux de fenêtre macOS sur la sidebar (issue #13) <span class="pill done">✅ Livré en 1.0.8 (2026-10-17)</span></h3>
+<p>Constat : avec le cadre « thin » de Tabby, la fenêtre macOS n'a pas de barre de titre ; les trois
+boutons de fenêtre sont dessinés sur son coin haut gauche, là où la sidebar est montée, et couvraient sa
+première rangée de boutons.</p>
+<p><strong>Codé le 2026-10-11</strong> (branche <code>claude/issue-13-macos-traffic-lights</code>,
+<code>8e41482</code>), <strong>fusionné le 2026-10-17</strong> en avance rapide : classe
+<code>sidebar-plus-mac-inset</code> sur l'hôte, posée à la même condition que la classe
+<code>mac-inset</code> de l'arbre de profils natif (macOS, cadre thin, hors plein écran ;
+<code>appRoot.component.pug</code>, vérifié sur 1.0.238) ; bande de hauteur <code>--tabs-height</code> en
+haut, zone de déplacement de la fenêtre ; l'espace <code>.tab-bar &gt; .inset</code> de Tabby masqué via
+<code>:has</code> tant que la sidebar occupe le coin, rendu dès qu'elle est éteinte, masquée par Alt+B ou
+en plein écran.</p>
+<p class="muted">Fusionné et publié sans test à la demande de l'utilisateur, qui n'a pas de Mac ; le README
+pose déjà que macOS n'est pas testé. Build vert (12 avertissements habituels). Sous Windows la classe ne
+s'applique jamais et le sélecteur ne correspond à rien. Reste ouvert : validation sur un vrai Mac,
+demandée au rapporteur dans la réponse de clôture.</p>
+<p class="muted">Livré le 2026-10-17 (1.0.8) · Journal : <a href="../AI-HISTORY.html">« Publication de la 1.0.8 » (2026-10-17)</a> · Commits : <code>8e41482</code> <code>3ffea67</code></p>
+
+<h3 id="issue-14-indentation">Indentation des profils dans les dossiers (issue #14) <span class="pill done">✅ Livré en 1.0.8 (2026-10-17)</span></h3>
+<p>Demande : l'icône d'un profil tombe dans la colonne de l'icône de son propre dossier, ce qui brouille la
+hiérarchie. Correctif d'une ligne dans <code>sidebarTree.component.pug</code> (branche
+<code>claude/issue-14-profile-indent</code>, rebasée sur <code>3ffea67</code> en <code>bf7db97</code>) : le
+<code>paddingLeft</code> des lignes de profil passe de <code>(depth + 1) * 20</code> à
+<code>(depth + 2) * 20</code>, l'icône s'aligne alors sur celle des sous-dossiers du même dossier.</p>
+<p class="muted">Test reporté le temps que l'utilisateur ferme Tabby, en cours d'utilisation. Build de test
+chargé par jonction à la place du plugin installé (sauvegardé puis remis à l'identique), Tabby relancé avec
+le port de debug ; <strong>validé à l'écran par l'utilisateur</strong> le 2026-10-17.</p>
+<p class="muted">Livré le 2026-10-17 (1.0.8) · Journal : <a href="../AI-HISTORY.html">« Publication de la 1.0.8 » (2026-10-17)</a> · Commits : <code>bf7db97</code></p>
+
 <h3 id="issue-8-filtre-actifs">Filtre « Actifs » (issue #8) <span class="pill done">✅ Livré en 1.0.7 (2026-10-09)</span></h3>
 <p>Demande : un bouton ACTIVE à côté de « ALL » (l'onglet de workspace « Tous ») qui ne montre que les
 sessions ouvertes. <strong>Déjà couvert en bonne partie pour le SSH</strong> : bloc « Sessions
