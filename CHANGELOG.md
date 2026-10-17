@@ -3,6 +3,15 @@
 All notable changes to `tabby-better-sidebar` are documented here, one entry
 per npm release. Dates are the npm publication dates.
 
+## 1.0.8 (2026-10-17)
+
+- **Fixed**: on macOS with the "thin" window frame, the window buttons no
+  longer cover the top of the sidebar (#13). A strip as tall as the tab bar
+  now sits above it, and the window can be dragged from it. Not tested on a
+  Mac yet.
+- **Changed**: profiles are indented one more step inside their folder, so
+  their icon lines up with the subfolders instead of the folder itself (#14).
+
 ## 1.0.7 (2026-10-09)
 
 - **Added**: Alt+B shows or hides the sidebar (#12). Hiding does not tear it
