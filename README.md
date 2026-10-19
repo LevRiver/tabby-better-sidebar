@@ -160,6 +160,9 @@ settings tab. Any other locale falls back to English.
 
 - <kbd>Ctrl</kbd>+<kbd>Enter</kbd> inserts a line break in the terminal instead
   of submitting
+- In the search field, the arrows move through the results and
+  <kbd>Enter</kbd> opens the highlighted one in a new tab;
+  <kbd>Shift</kbd>+<kbd>Enter</kbd> opens it in a split of the active tab
 - <kbd>Alt</kbd>+<kbd>B</kbd> hides the sidebar and brings it back, without
   closing anything — open SFTP views, the filter and the selection are still
   there. The binding can be changed in **Settings → Hotkeys**
@@ -207,6 +210,8 @@ Tabby's own `config.yaml`.
 | `showTunnels` | `true` | Port forwarding panel and badges on the profiles |
 | `showWorkspaces` | `true` | Workspace bar above the list |
 | `showFilter` | `true` | Search field and its shortcut |
+| `searchSplitSide` | `r` | Side of the split opened by Shift+Enter from the search: `r`, `b`, `l` or `t` |
+| `searchClearOnLaunch` | `false` | Clear the search after a result is opened from the keyboard |
 | `showActiveToggle` | `true` | "Active" tab: only the profiles with an open tab |
 | `wrapNames` | `false` | Long names on up to two lines instead of one cut-off line |
 | `showSftp` | `true` | The SFTP tab of the sidebar and its panel |

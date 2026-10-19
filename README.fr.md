@@ -175,6 +175,9 @@ l'anglais.
 
 - <kbd>Ctrl</kbd>+<kbd>Entrée</kbd> insère un saut de ligne dans le terminal au
   lieu de valider
+- Dans le champ de recherche, les flèches parcourent les résultats et
+  <kbd>Entrée</kbd> ouvre celui en surbrillance dans un nouvel onglet ;
+  <kbd>Maj</kbd>+<kbd>Entrée</kbd> l'ouvre dans un écran partagé de l'onglet actif
 - <kbd>Alt</kbd>+<kbd>B</kbd> masque la sidebar et la fait revenir, sans rien
   fermer — vues SFTP ouvertes, filtre et sélection sont toujours là. Le
   raccourci se change dans **Paramètres → Raccourcis**
@@ -222,6 +225,8 @@ sous `sidebarPlus` dans le `config.yaml` de Tabby.
 | `showTunnels` | `true` | Panneau de redirection de ports et badges sur les profils |
 | `showWorkspaces` | `true` | Barre des espaces de travail, au-dessus de la liste |
 | `showFilter` | `true` | Champ de recherche et son raccourci |
+| `searchSplitSide` | `r` | Côté de l'écran partagé ouvert par Maj+Entrée depuis la recherche : `r`, `b`, `l` ou `t` |
+| `searchClearOnLaunch` | `false` | Effacer la recherche après l'ouverture d'un résultat au clavier |
 | `showActiveToggle` | `true` | Onglet « Actifs » : seulement les profils qui ont un onglet ouvert |
 | `wrapNames` | `false` | Noms longs sur deux lignes au plus, au lieu d'une ligne coupée |
 | `showSftp` | `true` | L'onglet SFTP de la sidebar et son panneau |

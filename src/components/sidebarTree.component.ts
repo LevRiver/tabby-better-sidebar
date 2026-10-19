@@ -23,8 +23,10 @@ import {
     ProfileGroup,
     ProfileProvider,
     ProfilesService,
+    SplitDirection,
     SplitTabComponent,
     TAB_COLORS,
+    TabsService,
 } from 'tabby-core'
 import { SettingsTabComponent } from 'tabby-settings'
 import { BaseTerminalTabComponent } from 'tabby-terminal'
@@ -500,6 +502,7 @@ export class SidebarPlusTreeComponent implements OnInit, OnDestroy, AfterViewChe
         private config: ConfigService,
         private profilesService: ProfilesService,
         private app: AppService,
+        private tabsService: TabsService,
         private notifications: NotificationsService,
         private ngbModal: NgbModal,
         private zone: NgZone,
@@ -551,7 +554,12 @@ export class SidebarPlusTreeComponent implements OnInit, OnDestroy, AfterViewChe
             // the active workspace or drop the filter, both of which decide
             // what loadTreeItems() is supposed to build.
             this.reconcileHiddenBlocks()
-            void this.loadTreeItems()
+            // refreshTree(), not loadTreeItems() alone: a save during a search
+            // (a host key accepted on the first connection, a favorite) used
+            // to swap the results for the whole tree, filter text still in the
+            // field. #15 keeps the search open after a launch, which is exactly
+            // when such a save comes.
+            void this.refreshTree()
             // showTransfers can have just flipped — refreshTransferActivity()
             // reads it directly and clears the map rather than waiting for the
             // next registry event, which may never come if nothing is running.
@@ -1137,6 +1145,149 @@ export class SidebarPlusTreeComponent implements OnInit, OnDestroy, AfterViewChe
      */
     get filtering (): boolean {
         return this.filter.trim().length > 0 || this.narrowedToOpen
+    }
+
+    ////// KEYBOARD LAUNCH (#15) //////
+    /**
+     * The result row the arrows point at. Two ids rather than the profile
+     * alone: a profile can show up twice in the results, inside a folder whose
+     * name matched and in the flat list, and it is the row that is lit.
+     */
+    keyboardGroupId: string|null = null
+    keyboardProfileId: string|null = null
+
+    get searchSplitSide (): SplitDirection {
+        const side = this.config.store.sidebarPlus?.searchSplitSide
+        return side === 'l' || side === 't' || side === 'b' ? side : 'r'
+    }
+
+    get clearSearchOnLaunch (): boolean {
+        return this.config.store.sidebarPlus?.searchClearOnLaunch ?? false
+    }
+
+    /**
+     * Arrows and Enter in the filter field, while it holds a search: the
+     * keyboard path of Tabby's own profile selector, which the field already
+     * stands in for. Escape keeps its own binding in the template.
+     *
+     * Ctrl/Alt/Meta+Enter are left alone, on purpose: Ctrl+Enter is a hotkey of
+     * this plugin, and the others mean nothing here yet.
+     */
+    onFilterKeydown (event: KeyboardEvent): void {
+        if (event.isComposing || !this.filter.trim()) {
+            return
+        }
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            // Otherwise the caret jumps to the start or the end of the text.
+            event.preventDefault()
+            this.moveKeyboardHighlight(event.key === 'ArrowDown' ? 1 : -1)
+        } else if (event.key === 'Enter' && !event.ctrlKey && !event.altKey && !event.metaKey) {
+            event.preventDefault()
+            void this.launchHighlighted(event.shiftKey)
+        }
+    }
+
+    /**
+     * The profile rows of the results, top to bottom as rendered: a folder's
+     * own profiles first, then its sub-folders, nothing inside a folder shown
+     * shut. Walked on demand, on a key press, rather than kept in step with
+     * every way the tree can change under a search.
+     */
+    private visibleResultRows (): { groupId: string, profile: PartialProfile<Profile> }[] {
+        const rows: { groupId: string, profile: PartialProfile<Profile> }[] = []
+        const walk = (groups: PartialProfileGroup<CollapsableProfileGroup>[]): void => {
+            for (const group of groups) {
+                if (group.collapsed) {
+                    continue
+                }
+                for (const profile of group.profiles ?? []) {
+                    rows.push({ groupId: group.id, profile })
+                }
+                walk(group.children ?? [])
+            }
+        }
+        walk(this.rootGroups as PartialProfileGroup<CollapsableProfileGroup>[])
+        return rows
+    }
+
+    private highlightedRowIndex (rows: { groupId: string, profile: PartialProfile<Profile> }[]): number {
+        return rows.findIndex(row => row.groupId === this.keyboardGroupId && row.profile.id === this.keyboardProfileId)
+    }
+
+    private setKeyboardHighlight (row: { groupId: string, profile: PartialProfile<Profile> }|null): void {
+        this.keyboardGroupId = row?.groupId ?? null
+        this.keyboardProfileId = row?.profile.id ?? null
+    }
+
+    /** First result lit by default, like the native selector; nothing lit without a search. */
+    private resetKeyboardHighlight (): void {
+        this.setKeyboardHighlight(this.filter.trim() ? this.visibleResultRows()[0] ?? null : null)
+    }
+
+    /** Stops at both ends rather than wrapping, as the native selector does. A row folded away meanwhile restarts from the top. */
+    private moveKeyboardHighlight (step: number): void {
+        const rows = this.visibleResultRows()
+        if (!rows.length) {
+            return
+        }
+        const current = this.highlightedRowIndex(rows)
+        const next = current === -1 ? 0 : Math.min(rows.length - 1, Math.max(0, current + step))
+        this.setKeyboardHighlight(rows[next])
+        // After the change detection pass that moves the class.
+        setTimeout(() => {
+            document.querySelector('.sidebar-plus-tree a.tree-item.keyboard-active')?.scrollIntoView({ block: 'nearest' })
+        })
+    }
+
+    /**
+     * Opens the lit result: in a new tab, or with Shift in a new pane of the
+     * active tab (side from `searchSplitSide`).
+     *
+     * The search stays by default, to open several connections in a row; the
+     * field takes the focus back from the new terminal for that. With
+     * `searchClearOnLaunch` the filter goes and the new session keeps it.
+     */
+    private async launchHighlighted (split: boolean): Promise<void> {
+        const rows = this.visibleResultRows()
+        const row = rows[this.highlightedRowIndex(rows)] ?? rows[0]
+        if (!row) {
+            return
+        }
+        if (split) {
+            await this.launchProfileInSplit(row.profile)
+        } else {
+            await this.launchProfile(row.profile)
+        }
+        if (this.clearSearchOnLaunch) {
+            this.clearFilter()
+        } else {
+            setTimeout(() => this.filterInput?.nativeElement.focus())
+        }
+    }
+
+    /**
+     * The profile in a new pane of the active tab, next to its focused pane.
+     * What Tabby does itself for "split", with a profile in place of the
+     * duplicate: `tabsService.create()` on the profile's tab parameters, then
+     * `addTab()` on the split (splitTab.component.ts, checked on 1.0.238).
+     *
+     * No tab open, or a tab that is not a split (the settings), falls back to a
+     * plain new tab rather than doing nothing.
+     */
+    private async launchProfileInSplit (profile: PartialProfile<Profile>): Promise<void> {
+        const active = this.app.activeTab
+        if (!(active instanceof SplitTabComponent)) {
+            await this.launchProfile(profile)
+            return
+        }
+        this.noticeUnansweredVariables(profile)
+        this.recordRecentProfile(profile)
+        const params = await this.profilesService.newTabParametersForProfile(this.withWorkspaceColor(profile))
+        if (!params) {
+            return
+        }
+        const tab = this.tabsService.create(params)
+        await active.addTab(tab, active.getFocusedTab(), this.searchSplitSide)
     }
 
     /** `Échap` in the field: drop the filter and hand the focus back, rather than leave a filter nobody can see the cause of. */
@@ -2163,6 +2314,7 @@ export class SidebarPlusTreeComponent implements OnInit, OnDestroy, AfterViewChe
     private setRootGroups (groups: PartialProfileGroup<ProfileGroup>[]): void {
         this.baseRootGroups = groups
         this.rootGroups = this.narrowedToOpen ? this.narrowToOpen(groups) : groups
+        this.resetKeyboardHighlight()
     }
 
     /**

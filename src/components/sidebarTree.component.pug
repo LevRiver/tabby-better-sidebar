@@ -265,6 +265,7 @@
             [(ngModel)]='filter',
             [placeholder]="'Filter (Ctrl+F)' | translate",
             (ngModelChange)='onFilterChange()',
+            (keydown)='onFilterKeydown($event)',
             (keydown.escape)='clearFilter()'
         )
         button.btn.btn-sm.btn-hidden-toggle(
@@ -387,6 +388,7 @@
                                 [cdkDragData]='profile',
                                 [cdkDragDisabled]='filtering',
                                 [class.selected]='isProfileSelected(profile)',
+                                [class.keyboard-active]='profile.id === keyboardProfileId && group.id === keyboardGroupId',
                                 [class.drag-hidden]='isHiddenWhileDragging(profile)',
                                 data-profile-row='1',
                                 [attr.data-profile-id]='profile.id',

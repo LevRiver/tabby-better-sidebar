@@ -245,6 +245,12 @@ export class SidebarPlusConfigProvider extends ConfigProvider {
             // mid-session instead of letting them choose it once.
             workspaceSelectorMode: 'tabs' as 'tabs'|'dropdown',
             showFilter: true,
+            // Keyboard launch from the search (#15). Shift+Enter opens the
+            // result in a new pane of the active tab, on this side ('r', 'l',
+            // 't' or 'b', Tabby's SplitDirection). The search stays after a
+            // launch unless told otherwise, to open several in a row.
+            searchSplitSide: 'r' as 'r'|'l'|'t'|'b',
+            searchClearOnLaunch: false,
             // The "Actifs" tab (#8). Independent of showWorkspaces on purpose:
             // it narrows the selected workspace, and with the workspaces off
             // that is simply everything.

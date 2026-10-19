@@ -112,6 +112,15 @@ export class SidebarPlusSettingsTabComponent {
     get lblFilterBar (): string { return this.i18n.t('Filter bar') }
     get lblFilterBarHint (): string { return this.i18n.t('Searches the name, description, host and username.') }
     get lblFilterBarDesc (): string { return this.i18n.t('Search field and shortcut') }
+    get lblSplitSide (): string { return this.i18n.t('Shift+Enter opens a split') }
+    get lblSplitSideHint (): string { return this.i18n.t('Enter opens the highlighted result in a new tab; the arrows move the highlight.') }
+    get lblSplitSideDesc (): string { return this.i18n.t('Side of the active tab where the new pane opens.') }
+    get lblSideRight (): string { return this.i18n.t('To the right') }
+    get lblSideBelow (): string { return this.i18n.t('Below') }
+    get lblSideLeft (): string { return this.i18n.t('To the left') }
+    get lblSideAbove (): string { return this.i18n.t('Above') }
+    get lblClearOnLaunch (): string { return this.i18n.t('Clear the search after a launch') }
+    get lblClearOnLaunchDesc (): string { return this.i18n.t('Otherwise the results stay, to open several connections in a row.') }
     get lblSnippetsHint (): string { return this.i18n.t('A library of commands attached to profiles and folders.') }
     get lblSnippetsDesc (): string { return this.i18n.t('The "Snippets" entry of the right click and its dedicated tab.') }
     get lblNotes (): string { return this.i18n.t('Notes') }
@@ -303,6 +312,24 @@ export class SidebarPlusSettingsTabComponent {
         // Nothing else to poke: the sidebar and the mount service both listen
         // to `config.changed$`, which is where the block is reconciled (an
         // active workspace dropped, a filter cleared, the SFTP view left).
+        await this.config.save()
+    }
+
+    get searchSplitSide (): string {
+        return this.config.store.sidebarPlus?.searchSplitSide ?? 'r'
+    }
+
+    async setSearchSplitSide (value: string): Promise<void> {
+        this.config.store.sidebarPlus.searchSplitSide = ['r', 'l', 't', 'b'].includes(value) ? value : 'r'
+        await this.config.save()
+    }
+
+    get searchClearOnLaunch (): boolean {
+        return this.config.store.sidebarPlus?.searchClearOnLaunch ?? false
+    }
+
+    async setSearchClearOnLaunch (value: boolean): Promise<void> {
+        this.config.store.sidebarPlus.searchClearOnLaunch = value
         await this.config.save()
     }
 

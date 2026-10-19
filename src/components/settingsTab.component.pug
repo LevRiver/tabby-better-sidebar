@@ -138,6 +138,30 @@
             (ngModelChange)="setBlock('showFilter', $event)"
           )
 
+      .block-options(*ngIf="blockOn('showFilter')")
+        .form-line
+          .header
+            .title {{ lblSplitSide }} #[i.fas.fa-info-circle.info-hint([title]='lblSplitSideHint')]
+            .description {{ lblSplitSideDesc }}
+          .control
+            select#sidebar-plus-search-split-side.form-control(
+              [ngModel]='searchSplitSide',
+              (ngModelChange)='setSearchSplitSide($event)'
+            )
+              option(value='r') {{ lblSideRight }}
+              option(value='b') {{ lblSideBelow }}
+              option(value='l') {{ lblSideLeft }}
+              option(value='t') {{ lblSideAbove }}
+        .form-line
+          .header
+            .title {{ lblClearOnLaunch }}
+            .description {{ lblClearOnLaunchDesc }}
+          .control
+            toggle(
+              [ngModel]='searchClearOnLaunch',
+              (ngModelChange)='setSearchClearOnLaunch($event)'
+            )
+
       .form-line.block-switch
         .header
           .title Snippets #[i.fas.fa-info-circle.info-hint([title]='lblSnippetsHint')]
