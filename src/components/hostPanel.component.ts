@@ -18,6 +18,9 @@ export class SidebarPlusHostPanelComponent {
     /** Tabby's root-tab convention (padding + max width) — this component only ever IS a root tab. */
     @HostBinding('class.content-box') contentBox = true
 
+    /** Lifts Tabby's 600 px cap; each embedded page gets its own width back from `.sidebar-plus-host-page` (settingsNav.scss). */
+    @HostBinding('class.sidebar-plus-wide-page') widePage = true
+
     /** Every contribution present, in election order — the host first. */
     panels: BetterPanelContribution[]
 

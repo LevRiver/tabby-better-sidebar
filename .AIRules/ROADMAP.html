@@ -51,6 +51,7 @@ Ce qu'un chantier livré laisse malgré tout ouvert est isolé dans
 <tr><td><a href="annexes/REALISE.html#issue-10-titres-longs">Titres longs sur plusieurs lignes (issue #10)</a></td><td><span class="pill done">✅ Livré en 1.0.7 (2026-10-09)</span></td><td></td></tr>
 <tr><td><a href="annexes/REALISE.html#issue-8-filtre-actifs">Filtre « Actifs » (issue #8)</a></td><td><span class="pill done">✅ Livré en 1.0.7 (2026-10-09)</span></td><td></td></tr>
 <tr><td><a href="annexes/REALISE.html#issue-15-recherche-clavier">Lancer un résultat de recherche au clavier (issue #15)</a></td><td><span class="pill done">✅ Livré en 1.0.9 (2026-10-19)</span></td><td></td></tr>
+<tr><td><a href="#reglages-cartes">Page Fonctionnalités en cartes sur 2 colonnes</a></td><td><span class="pill planned">📋 Codé sur branche, à tester (2026-10-19)</span></td><td></td></tr>
 <tr><td><a href="annexes/REALISE.html#issue-13-feux-macos">Feux de fenêtre macOS sur la sidebar (issue #13)</a></td><td><span class="pill done">✅ Livré en 1.0.8 (2026-10-17)</span></td><td></td></tr>
 <tr><td><a href="annexes/REALISE.html#issue-14-indentation">Indentation des profils dans les dossiers (issue #14)</a></td><td><span class="pill done">✅ Livré en 1.0.8 (2026-10-17)</span></td><td></td></tr>
 <tr><td><a href="annexes/REALISE.html#pr-ogkaktus">PR #5, #6, #7 d'OGKaktus (tri SFTP, textes en dur, favoris SFTP)</a></td><td><span class="pill done">✅ Livré — 1.0.6 (2026-10-08)</span></td><td>—</td></tr>
@@ -693,6 +694,26 @@ avec la prochaine publication, pour que la version qui l'introduit le mentionne.
 <p>Deux issues codées par la session cloud sur deux branches parties de master <code>bf7be12</code>, un
 commit chacune, fichiers distincts. Vérification, test et publication sur le poste, comme pour la 1.0.7.
 Les deux sont parties en 1.0.8 le 2026-10-17 ; leurs fiches sont au registre.</p>
+
+<h2 id="reglages-cartes">Page Fonctionnalités en cartes sur 2 colonnes</h2>
+<p>Demande de l'utilisateur du 2026-10-19, capture à l'appui : la page « Fonctionnalités » de l'onglet
+Better Sidebar est une longue colonne de 600&nbsp;px, la largeur que Tabby impose à toute page de
+réglages (<code>.content-box { max-width: 600px }</code> de <code>app/src/global.scss</code>), et le
+reste de l'écran reste vide en plein écran.</p>
+<p><strong>Tranché avec l'utilisateur avant le code</strong> :</p>
+<ul>
+<li>Une <strong>carte encadrée par fonctionnalité</strong> : nom et interrupteur en en-tête, options
+dans la carte. Éteindre la fonctionnalité replie ses options, comme avant.</li>
+<li><strong>2 colonnes</strong> quand la page est large, <strong>1</strong> quand elle est étroite.
+Le seuil suit la largeur de la page elle-même (requête de conteneur), pas celle de la fenêtre.</li>
+<li><strong>Deux modes de regroupement</strong>, au choix par une bascule en haut de la page, mémorisée
+par poste (<code>localStorage</code>) : <em>par catégorie</em> (défaut : Liste des profils, Connexions
+SSH, SFTP) ou <em>liste simple</em> (mêmes cartes, sans titres de groupe).</li>
+<li>Le <strong>gestionnaire de transferts</strong> sort de la carte SFTP pour une carte à part dans la
+catégorie SFTP, grisée avec la mention « nécessite la vue SFTP » quand celle-ci est éteinte.</li>
+</ul>
+<p>La limite de 600&nbsp;px est levée pour la page de ce plugin seulement : dans le panneau « Better
+Tabby », la page Better Vault garde sa largeur d'origine.</p>
 
 <h2>Hors périmètre</h2>
 

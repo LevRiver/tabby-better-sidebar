@@ -7,6 +7,11 @@
 // one is active. Same approach as the other plugin's settings page, which this
 // layout is modelled on.
 .sidebar-plus-settings {
+    // The page measures itself, not the window: the cards go to two columns
+    // when the PAGE is wide enough, which also covers a settings tab split
+    // next to a terminal in a wide window.
+    container-type: inline-size;
+
     // Same two values as the vault's `.machine-badge`, deliberately: the two
     // plugins share one settings panel, so their page headers have to read as
     // one design rather than two. Restated here rather than shared — the file
@@ -41,47 +46,80 @@
         }
     }
 
-    // The switch that governs a whole block, above the options it owns. Set
-    // apart from them so the hierarchy is visible rather than merely implied.
-    .form-line.block-switch {
-        border-bottom: none;
+    // The intro sentence on the left, the layout switch on the right; the
+    // switch drops under the sentence when the page is narrow.
+    .feature-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem 1rem;
+        margin-bottom: 1rem;
 
-        .header .title {
-            font-weight: 600;
-            font-size: 1.02em;
+        .section-intro {
+            font-size: 0.85em;
+            opacity: 0.7;
         }
     }
 
-    // Blocks that carry no options of their own, grouped and tightened at the
-    // top of the page: they are plain switches, and spacing them like the ones
-    // that unfold a list of settings suggested they had settings too.
-    .settings-section.compact-blocks {
-        margin-bottom: 1.75rem;
+    .feature-layout-switch .btn {
+        white-space: nowrap;
+    }
 
-        .form-line.block-switch {
-            padding: 0.35rem 0;
-            border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+    // One category of the grouped layout: a small title over its own grid.
+    .feature-group {
+        margin-bottom: 1.5rem;
+    }
 
-            &:last-child {
-                border-bottom: none;
-            }
+    .feature-group-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0 0 0.6rem;
+        font-size: 0.8em;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        opacity: 0.65;
+    }
 
-            .description {
-                margin-top: 0.1rem;
-            }
+    // One column, then two once the page has room for two cards side by side
+    // with their controls. Rows align on their top: a card is as tall as its
+    // own options, never stretched to match its neighbour.
+    .feature-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.75rem;
+        align-items: start;
+    }
+
+    // One feature: its switch as the header, its own settings under it. The
+    // frame is what ties the options to their switch now, where an indented
+    // rule down the left used to.
+    .feature-card {
+        min-width: 0;
+        border: 1px solid rgba(128, 128, 128, 0.28);
+        border-radius: 6px;
+        background: rgba(128, 128, 128, 0.06);
+        padding: 0.15rem 1rem;
+        transition: border-color 0.15s ease, background 0.15s ease;
+
+        // A switched-off feature recedes, but stays fully readable: the card
+        // is still where it gets switched back on.
+        &.off {
+            background: transparent;
+            border-color: rgba(128, 128, 128, 0.18);
+        }
+
+        > .form-line.block-switch {
+            border-bottom: none;
         }
     }
 
-    // The options a block owns, indented under its switch and tied to it by a
-    // rule down the left. Without this they sat at the same level as the switch
-    // and read as six unrelated settings rather than as one feature and its
-    // own knobs.
-    .block-options {
-        margin-left: 0.4rem;
-        padding-left: 1rem;
-        border-left: 2px solid rgba(128, 128, 128, 0.28);
-
+    .feature-card-body {
         .form-line {
+            border-bottom: none;
+            border-top: 1px solid rgba(128, 128, 128, 0.14);
             padding: 0.5rem 0;
 
             .title {
@@ -89,8 +127,37 @@
             }
         }
 
-        .form-line:first-child {
-            padding-top: 0.25rem;
+        &.two-columns {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            column-gap: 2rem;
+        }
+    }
+
+    @container (min-width: 900px) {
+        .feature-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .feature-card.wide {
+            grid-column: 1 / -1;
+        }
+
+        .feature-card-body.two-columns {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+
+            > .full-row {
+                grid-column: 1 / -1;
+            }
+        }
+    }
+
+    // The switch that governs a whole feature. Set apart from its options so
+    // the hierarchy is visible rather than merely implied.
+    .form-line.block-switch {
+        .header .title {
+            font-weight: 600;
+            font-size: 1.02em;
         }
     }
 

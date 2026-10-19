@@ -39,3 +39,19 @@
         }
     }
 }
+
+// Tabby caps every settings page at 600 px (`.content-box` in its
+// global.scss). Lifted for this plugin's page, whose feature cards sit on two
+// columns when there is room; still bounded, so a toggle never ends up a
+// screen away from its label on an ultra-wide monitor. Top-level for the same
+// reason as the strip above: both the standalone page and the host panel
+// carry the class.
+.content-box.sidebar-plus-wide-page {
+    max-width: 1600px;
+}
+
+// Inside the shared "Better Tabby" panel, the other plugins' pages keep the
+// width Tabby gives them: only this plugin's own page is laid out for more.
+.sidebar-plus-host-page:not(.wide) {
+    max-width: 600px;
+}

@@ -7,6 +7,10 @@
   ul.nav.nav-tabs.sidebar-plus-settings-nav
     li.nav-item(*ngFor='let panel of panels')
       a.nav-link(href='#', [class.active]='selected === panel.id', (click)='select(panel.id, $event)') {{panel.title}}
+  //- Le panneau ne plafonne plus sa largeur (sidebar-plus-wide-page), pour
+  //- que les cartes de cette page passent sur deux colonnes. Les autres
+  //- plugins gardent les 600 px de Tabby sur leur page, que leur rend ce
+  //- cadre : rien ne change chez eux.
   ng-container(*ngFor='let panel of panels')
-    ng-container(*ngIf='selected === panel.id')
+    .sidebar-plus-host-page(*ngIf='selected === panel.id', [class.wide]="panel.id === 'sidebar'")
       ng-container(*ngComponentOutlet='panel.componentType; injector: embedInjector')

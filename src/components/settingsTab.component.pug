@@ -1,5 +1,6 @@
-//- One `.form-line` per setting — label and short explanation on the left,
-//- control on the right.
+//- One `.form-line` per setting, label and short explanation on the left,
+//- control on the right; one `.feature-card` per feature, holding its switch
+//- and its own settings, laid out on two columns when the page is wide.
 //-
 //- Three rules hold this page together:
 //-
@@ -39,295 +40,340 @@
     li.nav-item(*ngIf="blockOn('showSnippets')")
       a.nav-link(href='#', [class.active]="section === 'snippets'", (click)="setSection('snippets', $event)") Snippets
 
+  //- Une carte par réglage, comme sur « Fonctionnalités » : la page prend
+  //- désormais toute la largeur, et trois lignes étirées d'un bord à l'autre
+  //- éloignaient chaque interrupteur de son intitulé.
   ng-container(*ngIf="section === 'general'")
-    .settings-section
-      h3 {{ lblGeneral }}
+    .feature-grid
+      .feature-card
+        .form-line.block-switch
+          .header
+            .title {{ lblShowSidebar }} #[i.fas.fa-info-circle.info-hint([title]='lblShowSidebarHint')]
+            .description {{ lblShowSidebarDesc }}
+          .control
+            toggle(
+              [ngModel]='enabled',
+              (ngModelChange)='setEnabled($event)'
+            )
 
-      .form-line
-        .header
-          .title {{ lblShowSidebar }} #[i.fas.fa-info-circle.info-hint([title]='lblShowSidebarHint')]
-          .description {{ lblShowSidebarDesc }}
-        .control
-          toggle(
-            [ngModel]='enabled',
-            (ngModelChange)='setEnabled($event)'
-          )
+      .feature-card
+        .form-line.block-switch
+          .header
+            .title {{ lblHideTransfersMenu }} #[i.fas.fa-info-circle.info-hint([title]='lblHideTransfersMenuHint')]
+            .description {{ lblHideTransfersMenuDesc }}
+          .control
+            toggle(
+              [ngModel]='hideNativeTransfersMenu',
+              (ngModelChange)='setHideNativeTransfersMenu($event)'
+            )
 
-      .form-line
-        .header
-          .title {{ lblHideTransfersMenu }} #[i.fas.fa-info-circle.info-hint([title]='lblHideTransfersMenuHint')]
-          .description {{ lblHideTransfersMenuDesc }}
-        .control
-          toggle(
-            [ngModel]='hideNativeTransfersMenu',
-            (ngModelChange)='setHideNativeTransfersMenu($event)'
-          )
+      .feature-card
+        .form-line.block-switch
+          .header
+            .title {{ lblWrapNames }} #[i.fas.fa-info-circle.info-hint([title]='lblWrapNamesHint')]
+            .description {{ lblWrapNamesDesc }}
+          .control
+            toggle(
+              [ngModel]='wrapNames',
+              (ngModelChange)='setWrapNames($event)'
+            )
 
-      .form-line
-        .header
-          .title {{ lblWrapNames }} #[i.fas.fa-info-circle.info-hint([title]='lblWrapNamesHint')]
-          .description {{ lblWrapNamesDesc }}
-        .control
-          toggle(
-            [ngModel]='wrapNames',
-            (ngModelChange)='setWrapNames($event)'
-          )
-
+  //- Une carte par fonctionnalité : son interrupteur en en-tête, ses options
+  //- dans la carte, qui se replient quand on l'éteint. Deux présentations des
+  //- MÊMES cartes, au choix de la bascule en tête de page (mémorisée par
+  //- poste) : par catégorie, ou à la suite sans titres. Chaque carte n'est
+  //- écrite qu'une fois, dans le gabarit `featureCard` plus bas.
   ng-container(*ngIf="section === 'features'")
-    .settings-section
-      .section-intro
-        | {{ lblFeaturesIntro }}
+    .feature-toolbar
+      .section-intro {{ lblFeaturesIntro }}
+      .btn-group.feature-layout-switch
+        button.btn.btn-sm(
+          type='button',
+          [class.btn-primary]="featureLayout === 'grouped'",
+          [class.btn-secondary]="featureLayout !== 'grouped'",
+          (click)="setFeatureLayout('grouped')"
+        )
+          i.fas.fa-layer-group
+          | {{ lblLayoutGrouped }}
+        button.btn.btn-sm(
+          type='button',
+          [class.btn-primary]="featureLayout === 'flat'",
+          [class.btn-secondary]="featureLayout !== 'flat'",
+          (click)="setFeatureLayout('flat')"
+        )
+          i.fas.fa-th-large
+          | {{ lblLayoutFlat }}
 
+    ng-container(*ngIf="featureLayout === 'grouped'")
+      section.feature-group(*ngFor='let group of featureGroups')
+        h4.feature-group-title
+          i.fas([ngClass]='group.icon')
+          | {{ groupTitle(group.id) }}
+        .feature-grid
+          ng-container(*ngFor='let card of group.cards')
+            ng-container(*ngTemplateOutlet='featureCard; context: {$implicit: card}')
 
-    //- Les blocs sans réglage propre, groupés et resserrés en tête : ce sont
-        de simples interrupteurs, et les étaler comme ceux qui ouvrent une
-        liste d'options laissait croire qu'ils en avaient aussi.
-    .settings-section.compact-blocks
-      .form-line.block-switch
-        .header
-          .title {{ lblTunnels }} #[i.fas.fa-info-circle.info-hint([title]='lblTunnelsHint')]
-          .description {{ lblTunnelsDesc }}
-          .description.text-warning(*ngIf="!hostHas('ssh-tab')") {{ lblUnavailable }}
-        .control
-          toggle(
-            [ngModel]="blockOn('showTunnels', 'ssh-tab')",
-            [disabled]="!hostHas('ssh-tab')",
-            (ngModelChange)="setBlock('showTunnels', $event)"
-          )
+    .feature-grid(*ngIf="featureLayout === 'flat'")
+      ng-container(*ngFor='let card of featureCards')
+        ng-container(*ngTemplateOutlet='featureCard; context: {$implicit: card}')
 
-      .form-line.block-switch
-        .header
-          .title {{ lblWorkspaces }} #[i.fas.fa-info-circle.info-hint([title]='lblWorkspacesHint')]
-          .description {{ lblWorkspacesDesc }}
-        .control
-          toggle(
-            [ngModel]="blockOn('showWorkspaces')",
-            (ngModelChange)="setBlock('showWorkspaces', $event)"
-          )
+  ng-template(#featureCard let-card)
+    ng-container([ngSwitch]='card')
 
-      .block-options(*ngIf="blockOn('showWorkspaces')")
-        .form-line
+      .feature-card(*ngSwitchCase="'workspaces'", [class.off]="!blockOn('showWorkspaces')")
+        .form-line.block-switch
           .header
-            .title {{ lblPresentation }} #[i.fas.fa-info-circle.info-hint([title]='lblPresentationHint')]
-            .description {{ lblPresentationDesc }}
-          .control
-            select#sidebar-plus-workspace-selector-mode.form-control(
-              [ngModel]='workspaceSelectorMode',
-              (ngModelChange)='setWorkspaceSelectorMode($event)'
-            )
-              option(value='tabs') {{ lblModeTabs }}
-              option(value='dropdown') {{ lblModeDropdown }}
-
-      .form-line.block-switch
-        .header
-          .title {{ lblActiveToggle }} #[i.fas.fa-info-circle.info-hint([title]='lblActiveToggleHint')]
-          .description {{ lblActiveToggleDesc }}
-        .control
-          toggle(
-            [ngModel]="blockOn('showActiveToggle')",
-            (ngModelChange)="setBlock('showActiveToggle', $event)"
-          )
-
-      .form-line.block-switch
-        .header
-          .title {{ lblFilterBar }} #[i.fas.fa-info-circle.info-hint([title]='lblFilterBarHint')]
-          .description {{ lblFilterBarDesc }} #[kbd Ctrl+F].
-        .control
-          toggle(
-            [ngModel]="blockOn('showFilter')",
-            (ngModelChange)="setBlock('showFilter', $event)"
-          )
-
-      .block-options(*ngIf="blockOn('showFilter')")
-        .form-line
-          .header
-            .title {{ lblSplitSide }} #[i.fas.fa-info-circle.info-hint([title]='lblSplitSideHint')]
-            .description {{ lblSplitSideDesc }}
-          .control
-            select#sidebar-plus-search-split-side.form-control(
-              [ngModel]='searchSplitSide',
-              (ngModelChange)='setSearchSplitSide($event)'
-            )
-              option(value='r') {{ lblSideRight }}
-              option(value='b') {{ lblSideBelow }}
-              option(value='l') {{ lblSideLeft }}
-              option(value='t') {{ lblSideAbove }}
-        .form-line
-          .header
-            .title {{ lblClearOnLaunch }}
-            .description {{ lblClearOnLaunchDesc }}
+            .title {{ lblWorkspaces }} #[i.fas.fa-info-circle.info-hint([title]='lblWorkspacesHint')]
+            .description {{ lblWorkspacesDesc }}
           .control
             toggle(
-              [ngModel]='searchClearOnLaunch',
-              (ngModelChange)='setSearchClearOnLaunch($event)'
+              [ngModel]="blockOn('showWorkspaces')",
+              (ngModelChange)="setBlock('showWorkspaces', $event)"
             )
+        .feature-card-body(*ngIf="blockOn('showWorkspaces')")
+          .form-line
+            .header
+              .title {{ lblPresentation }} #[i.fas.fa-info-circle.info-hint([title]='lblPresentationHint')]
+              .description {{ lblPresentationDesc }}
+            .control
+              select#sidebar-plus-workspace-selector-mode.form-control(
+                [ngModel]='workspaceSelectorMode',
+                (ngModelChange)='setWorkspaceSelectorMode($event)'
+              )
+                option(value='tabs') {{ lblModeTabs }}
+                option(value='dropdown') {{ lblModeDropdown }}
 
-      .form-line.block-switch
-        .header
-          .title Snippets #[i.fas.fa-info-circle.info-hint([title]='lblSnippetsHint')]
-          .description {{ lblSnippetsDesc }}
-        .control
-          toggle(
-            [ngModel]="blockOn('showSnippets')",
-            (ngModelChange)="setBlock('showSnippets', $event)"
-          )
-
-      .form-line.block-switch
-        .header
-          .title {{ lblNotes }} #[i.fas.fa-info-circle.info-hint([title]='lblNotesHint')]
-          .description {{ lblNotesDesc }}
-        .control
-          toggle(
-            [ngModel]="blockOn('showNotes')",
-            (ngModelChange)="setBlock('showNotes', $event)"
-          )
-
-      .form-line.block-switch
-        .header
-          .title {{ lblRecentProfiles }} #[i.fas.fa-info-circle.info-hint([title]='lblRecentProfilesHint')]
-          .description {{ lblRecentProfilesDesc }}
-        .control
-          toggle(
-            [ngModel]="blockOn('showRecentProfiles')",
-            (ngModelChange)="setBlock('showRecentProfiles', $event)"
-          )
-
-    //- SESSIONS ACTIVES
-    .settings-section
-      .form-line.block-switch
-        .header
-          .title {{ lblActiveSessions }} #[i.fas.fa-info-circle.info-hint([title]='lblActiveSessionsHint')]
-          .description {{ lblActiveSessionsDesc }}
-          .description.text-warning(*ngIf="!hostHas('ssh-tab')") {{ lblUnavailable }}
-        .control
-          toggle(
-            [ngModel]="blockOn('showActiveSessions', 'ssh-tab')",
-            [disabled]="!hostHas('ssh-tab')",
-            (ngModelChange)="setBlock('showActiveSessions', $event)"
-          )
-
-      .block-options(*ngIf="blockOn('showActiveSessions', 'ssh-tab')")
-        .form-line
+      .feature-card(*ngSwitchCase="'activeToggle'", [class.off]="!blockOn('showActiveToggle')")
+        .form-line.block-switch
           .header
-            .title {{ lblPing }} #[i.fas.fa-info-circle.info-hint([title]='lblPingHint')]
-            .description {{ lblPingDesc }}
-          .control
-            input#sidebar-plus-ping-interval.form-control(
-              type='number',
-              min='0',
-              step='1',
-              [ngModel]='pingIntervalSeconds',
-              (ngModelChange)='setPingIntervalSeconds($event)'
-            )
-
-    //- VUE SFTP — de loin le bloc le plus outillé
-    .settings-section
-      .form-line.block-switch
-        .header
-          .title {{ lblSftp }} #[i.fas.fa-info-circle.info-hint([title]='lblSftpHint')]
-          .description {{ lblSftpDesc }}
-          .description.text-warning(*ngIf="!hostHas('sftp-panel')") {{ lblUnavailable }}
-        .control
-          toggle(
-            [ngModel]="blockOn('showSftp', 'sftp-panel')",
-            [disabled]="!hostHas('sftp-panel')",
-            (ngModelChange)="setBlock('showSftp', $event)"
-          )
-
-      .block-options(*ngIf="blockOn('showSftp', 'sftp-panel')")
-        //- `stacked` : le chemin passe sous son intitulé et prend toute la largeur.
-            Sur la même ligne que les deux boutons, il ne restait au champ que
-            quelques caractères visibles — un chemin d'exécutable n'y tenait pas.
-        .form-line.stacked
-          .header
-            .title {{ lblEditor }} #[i.fas.fa-info-circle.info-hint([title]='lblEditorHint')]
-            .description {{ lblEditorDesc }}
-          .control
-            input#sidebar-plus-editor-path.form-control(
-              type='text',
-              [(ngModel)]='editorPath',
-              (change)='save()',
-              [title]='editorPath',
-              [placeholder]='lblEditorPlaceholder'
-            )
-            button.btn.btn-primary((click)='browse()')
-              i.fas.fa-folder-open
-              | {{ lblBrowse }}
-            button.btn.btn-secondary(*ngIf='editorPath', (click)='clear()')
-              i.fas.fa-times
-              | {{ lblClear }}
-
-        //- `toggle`, Tabby's own component, and not a bare
-        //- `input.form-check-input`: Bootstrap only draws a check *inside* a
-        //- `.form-check.form-switch` wrapper, so a lone input rendered as a
-        //- transparent square — invisible on the dark theme once unticked, which
-        //- read as a missing control rather than an unticked one. `toggle` brings
-        //- that wrapper and matches the switches of Tabby's own settings pages.
-        .form-line
-          .header
-            .title {{ lblDragOut }} #[i.fas.fa-info-circle.info-hint([title]='lblDragOutHint')]
-            .description {{ lblDragOutDesc }}
+            .title {{ lblActiveToggle }} #[i.fas.fa-info-circle.info-hint([title]='lblActiveToggleHint')]
+            .description {{ lblActiveToggleDesc }}
           .control
             toggle(
-              [ngModel]='dragOutFolders',
-              (ngModelChange)='setDragOutFolders($event)'
+              [ngModel]="blockOn('showActiveToggle')",
+              (ngModelChange)="setBlock('showActiveToggle', $event)"
             )
 
-        .form-line
+      .feature-card(*ngSwitchCase="'filter'", [class.off]="!blockOn('showFilter')")
+        .form-line.block-switch
           .header
-            .title {{ lblAutoRefresh }} #[i.fas.fa-info-circle.info-hint([title]='lblAutoRefreshHint')]
-            .description {{ lblAutoRefreshDesc }}
-          .control
-            input#sidebar-plus-auto-refresh.form-control(
-              type='number',
-              min='0',
-              step='1',
-              [ngModel]='autoRefreshSeconds',
-              (ngModelChange)='setAutoRefreshSeconds($event)'
-            )
-
-        .form-line
-          .header
-            .title {{ lblAutoReturn }} #[i.fas.fa-info-circle.info-hint([title]='lblAutoReturnHint')]
-            .description {{ lblAutoReturnDesc }}
+            .title {{ lblFilterBar }} #[i.fas.fa-info-circle.info-hint([title]='lblFilterBarHint')]
+            .description {{ lblFilterBarDesc }} #[kbd Ctrl+F].
           .control
             toggle(
-              [ngModel]='autoReturnToProfiles',
-              (ngModelChange)='setAutoReturnToProfiles($event)'
+              [ngModel]="blockOn('showFilter')",
+              (ngModelChange)="setBlock('showFilter', $event)"
             )
+        .feature-card-body(*ngIf="blockOn('showFilter')")
+          .form-line
+            .header
+              .title {{ lblSplitSide }} #[i.fas.fa-info-circle.info-hint([title]='lblSplitSideHint')]
+              .description {{ lblSplitSideDesc }}
+            .control
+              select#sidebar-plus-search-split-side.form-control(
+                [ngModel]='searchSplitSide',
+                (ngModelChange)='setSearchSplitSide($event)'
+              )
+                option(value='r') {{ lblSideRight }}
+                option(value='b') {{ lblSideBelow }}
+                option(value='l') {{ lblSideLeft }}
+                option(value='t') {{ lblSideAbove }}
+          .form-line
+            .header
+              .title {{ lblClearOnLaunch }}
+              .description {{ lblClearOnLaunchDesc }}
+            .control
+              toggle(
+                [ngModel]='searchClearOnLaunch',
+                (ngModelChange)='setSearchClearOnLaunch($event)'
+              )
 
-        .form-line
+      .feature-card(*ngSwitchCase="'recent'", [class.off]="!blockOn('showRecentProfiles')")
+        .form-line.block-switch
           .header
-            .title {{ lblDeleteDefault }} #[i.fas.fa-info-circle.info-hint([title]='lblDeleteDefaultHint')]
-            .description {{ lblDeleteApplies }} #[kbd {{ lblKeyDel }}] {{ lblDeleteRightClick }} #[kbd {{ lblKeyEsc }}] {{ lblDeleteEscape }}
+            .title {{ lblRecentProfiles }} #[i.fas.fa-info-circle.info-hint([title]='lblRecentProfilesHint')]
+            .description {{ lblRecentProfilesDesc }}
           .control
-            select#sidebar-plus-delete-default.form-control(
-              [ngModel]='deleteDefaultButton',
-              (ngModelChange)='setDeleteDefaultButton($event)'
+            toggle(
+              [ngModel]="blockOn('showRecentProfiles')",
+              (ngModelChange)="setBlock('showRecentProfiles', $event)"
             )
-              option(value='cancel') {{ lblOptionCancel }}
-              option(value='confirm') {{ lblOptionConfirm }}
 
-        .form-line
+      .feature-card(*ngSwitchCase="'notes'", [class.off]="!blockOn('showNotes')")
+        .form-line.block-switch
           .header
-            .title {{ lblDateFormat }} #[i.fas.fa-info-circle.info-hint([title]='lblDateFormatHint')]
-            .description {{ lblDateFormatDesc }}
+            .title {{ lblNotes }} #[i.fas.fa-info-circle.info-hint([title]='lblNotesHint')]
+            .description {{ lblNotesDesc }}
           .control
-            select#sidebar-plus-date-format.form-control(
-              [ngModel]='dateFormat',
-              (ngModelChange)='setDateFormat($event)'
+            toggle(
+              [ngModel]="blockOn('showNotes')",
+              (ngModelChange)="setBlock('showNotes', $event)"
             )
-              option(value='locale') {{ lblDateLocale }}
-              option(value='dmy') {{ lblDateDmy }}
-              option(value='iso') {{ lblDateIso }}
 
-        .form-line
+      .feature-card(*ngSwitchCase="'snippets'", [class.off]="!blockOn('showSnippets')")
+        .form-line.block-switch
+          .header
+            .title Snippets #[i.fas.fa-info-circle.info-hint([title]='lblSnippetsHint')]
+            .description {{ lblSnippetsDesc }}
+          .control
+            toggle(
+              [ngModel]="blockOn('showSnippets')",
+              (ngModelChange)="setBlock('showSnippets', $event)"
+            )
+
+      .feature-card(*ngSwitchCase="'sessions'", [class.off]="!blockOn('showActiveSessions', 'ssh-tab')")
+        .form-line.block-switch
+          .header
+            .title {{ lblActiveSessions }} #[i.fas.fa-info-circle.info-hint([title]='lblActiveSessionsHint')]
+            .description {{ lblActiveSessionsDesc }}
+            .description.text-warning(*ngIf="!hostHas('ssh-tab')") {{ lblUnavailable }}
+          .control
+            toggle(
+              [ngModel]="blockOn('showActiveSessions', 'ssh-tab')",
+              [disabled]="!hostHas('ssh-tab')",
+              (ngModelChange)="setBlock('showActiveSessions', $event)"
+            )
+        .feature-card-body(*ngIf="blockOn('showActiveSessions', 'ssh-tab')")
+          .form-line
+            .header
+              .title {{ lblPing }} #[i.fas.fa-info-circle.info-hint([title]='lblPingHint')]
+              .description {{ lblPingDesc }}
+            .control
+              input#sidebar-plus-ping-interval.form-control(
+                type='number',
+                min='0',
+                step='1',
+                [ngModel]='pingIntervalSeconds',
+                (ngModelChange)='setPingIntervalSeconds($event)'
+              )
+
+      .feature-card(*ngSwitchCase="'tunnels'", [class.off]="!blockOn('showTunnels', 'ssh-tab')")
+        .form-line.block-switch
+          .header
+            .title {{ lblTunnels }} #[i.fas.fa-info-circle.info-hint([title]='lblTunnelsHint')]
+            .description {{ lblTunnelsDesc }}
+            .description.text-warning(*ngIf="!hostHas('ssh-tab')") {{ lblUnavailable }}
+          .control
+            toggle(
+              [ngModel]="blockOn('showTunnels', 'ssh-tab')",
+              [disabled]="!hostHas('ssh-tab')",
+              (ngModelChange)="setBlock('showTunnels', $event)"
+            )
+
+      //- La plus outillée : elle prend toute la largeur de la grille, et ses
+          options passent elles-mêmes sur deux colonnes quand la place le permet.
+      .feature-card.wide(*ngSwitchCase="'sftp'", [class.off]="!sftpOn")
+        .form-line.block-switch
+          .header
+            .title {{ lblSftp }} #[i.fas.fa-info-circle.info-hint([title]='lblSftpHint')]
+            .description {{ lblSftpDesc }}
+            .description.text-warning(*ngIf="!hostHas('sftp-panel')") {{ lblUnavailable }}
+          .control
+            toggle(
+              [ngModel]='sftpOn',
+              [disabled]="!hostHas('sftp-panel')",
+              (ngModelChange)="setBlock('showSftp', $event)"
+            )
+        .feature-card-body.two-columns(*ngIf='sftpOn')
+          //- `stacked` : le chemin passe sous son intitulé et prend toute la largeur.
+              Sur la même ligne que les deux boutons, il ne restait au champ que
+              quelques caractères visibles : un chemin d'exécutable n'y tenait pas.
+          .form-line.stacked.full-row
+            .header
+              .title {{ lblEditor }} #[i.fas.fa-info-circle.info-hint([title]='lblEditorHint')]
+              .description {{ lblEditorDesc }}
+            .control
+              input#sidebar-plus-editor-path.form-control(
+                type='text',
+                [(ngModel)]='editorPath',
+                (change)='save()',
+                [title]='editorPath',
+                [placeholder]='lblEditorPlaceholder'
+              )
+              button.btn.btn-primary((click)='browse()')
+                i.fas.fa-folder-open
+                | {{ lblBrowse }}
+              button.btn.btn-secondary(*ngIf='editorPath', (click)='clear()')
+                i.fas.fa-times
+                | {{ lblClear }}
+
+          //- `toggle`, Tabby's own component, and not a bare
+          //- `input.form-check-input`: Bootstrap only draws a check *inside* a
+          //- `.form-check.form-switch` wrapper, so a lone input rendered as a
+          //- transparent square, invisible on the dark theme once unticked, which
+          //- read as a missing control rather than an unticked one. `toggle` brings
+          //- that wrapper and matches the switches of Tabby's own settings pages.
+          .form-line
+            .header
+              .title {{ lblDragOut }} #[i.fas.fa-info-circle.info-hint([title]='lblDragOutHint')]
+              .description {{ lblDragOutDesc }}
+            .control
+              toggle(
+                [ngModel]='dragOutFolders',
+                (ngModelChange)='setDragOutFolders($event)'
+              )
+
+          .form-line
+            .header
+              .title {{ lblAutoRefresh }} #[i.fas.fa-info-circle.info-hint([title]='lblAutoRefreshHint')]
+              .description {{ lblAutoRefreshDesc }}
+            .control
+              input#sidebar-plus-auto-refresh.form-control(
+                type='number',
+                min='0',
+                step='1',
+                [ngModel]='autoRefreshSeconds',
+                (ngModelChange)='setAutoRefreshSeconds($event)'
+              )
+
+          .form-line
+            .header
+              .title {{ lblAutoReturn }} #[i.fas.fa-info-circle.info-hint([title]='lblAutoReturnHint')]
+              .description {{ lblAutoReturnDesc }}
+            .control
+              toggle(
+                [ngModel]='autoReturnToProfiles',
+                (ngModelChange)='setAutoReturnToProfiles($event)'
+              )
+
+          .form-line
+            .header
+              .title {{ lblDeleteDefault }} #[i.fas.fa-info-circle.info-hint([title]='lblDeleteDefaultHint')]
+              .description {{ lblDeleteApplies }} #[kbd {{ lblKeyDel }}] {{ lblDeleteRightClick }} #[kbd {{ lblKeyEsc }}] {{ lblDeleteEscape }}
+            .control
+              select#sidebar-plus-delete-default.form-control(
+                [ngModel]='deleteDefaultButton',
+                (ngModelChange)='setDeleteDefaultButton($event)'
+              )
+                option(value='cancel') {{ lblOptionCancel }}
+                option(value='confirm') {{ lblOptionConfirm }}
+
+          .form-line
+            .header
+              .title {{ lblDateFormat }} #[i.fas.fa-info-circle.info-hint([title]='lblDateFormatHint')]
+              .description {{ lblDateFormatDesc }}
+            .control
+              select#sidebar-plus-date-format.form-control(
+                [ngModel]='dateFormat',
+                (ngModelChange)='setDateFormat($event)'
+              )
+                option(value='locale') {{ lblDateLocale }}
+                option(value='dmy') {{ lblDateDmy }}
+                option(value='iso') {{ lblDateIso }}
+
+      //- Sa propre carte, mais il n'existe qu'avec la vue SFTP (le panneau se
+          monte sous elle) : vue éteinte, l'interrupteur est grisé et le dit, et
+          le choix de l'utilisateur est gardé pour le jour où on la rallume.
+      .feature-card(*ngSwitchCase="'transfers'", [class.off]="!transfersOn")
+        .form-line.block-switch
           .header
             .title {{ lblTransfers }} #[i.fas.fa-info-circle.info-hint([title]='lblTransfersHint')]
             .description {{ lblTransfersDesc }}
+            .description.text-warning(*ngIf='!sftpOn') {{ lblNeedsSftp }}
           .control
             toggle(
-              [ngModel]="blockOn('showTransfers')",
+              [ngModel]='transfersOn',
+              [disabled]='!sftpOn',
               (ngModelChange)="setBlock('showTransfers', $event)"
             )
 

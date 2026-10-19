@@ -20,6 +20,15 @@ import { SidebarPlusSnippetsService } from '../snippets.service'
  * feature off takes its options away with it. Only what governs the whole
  * plugin — or Tabby itself — stays on the general page.
  */
+/** The stored feature layout; grouped unless this machine chose the flat one. */
+function readFeatureLayout (): 'grouped'|'flat' {
+    try {
+        return window.localStorage.sidebarPlusSettingsLayout === 'flat' ? 'flat' : 'grouped'
+    } catch {
+        return 'grouped'
+    }
+}
+
 @Component({
     template: require('./settingsTab.component.pug'),
 })
@@ -31,6 +40,9 @@ export class SidebarPlusSettingsTabComponent {
      * host carries the layout then.
      */
     @HostBinding('class.content-box') contentBox: boolean
+
+    /** Lifts the 600 px cap Tabby puts on `.content-box`, so the feature cards can sit on two columns (settingsNav.scss). */
+    @HostBinding('class.sidebar-plus-wide-page') widePage = true
 
     /**
      * The page to open on, set by whoever is about to open this tab and read
@@ -45,6 +57,26 @@ export class SidebarPlusSettingsTabComponent {
 
     /** Which page of this tab is showing. Deliberately not persisted: a reading position, not a preference. */
     section: 'general'|'features'|'snippets' = 'general'
+
+    /**
+     * The feature cards, in the order the page shows them. The grouped layout
+     * walks the groups; the flat one walks `featureCards`, the same cards in
+     * the same order with the group titles left out.
+     */
+    readonly featureGroups: { id: 'profiles'|'ssh'|'sftp', icon: string, cards: string[] }[] = [
+        { id: 'profiles', icon: 'fa-list', cards: ['workspaces', 'activeToggle', 'filter', 'recent', 'notes', 'snippets'] },
+        { id: 'ssh', icon: 'fa-network-wired', cards: ['sessions', 'tunnels'] },
+        { id: 'sftp', icon: 'fa-folder-open', cards: ['sftp', 'transfers'] },
+    ]
+
+    readonly featureCards: string[] = this.featureGroups.flatMap(g => g.cards)
+
+    /**
+     * How the feature cards are laid out. Per machine, in localStorage, like
+     * the sidebar's width: a way of reading the page, not a setting of the
+     * plugin, so it has no business in the synced config.
+     */
+    featureLayout: 'grouped'|'flat' = readFeatureLayout()
 
     editorPath: string
 
@@ -74,6 +106,23 @@ export class SidebarPlusSettingsTabComponent {
         this.section = section
     }
 
+    setFeatureLayout (layout: 'grouped'|'flat'): void {
+        this.featureLayout = layout
+        try {
+            window.localStorage.sidebarPlusSettingsLayout = layout
+        } catch {
+            // Storage refused: the choice simply lasts until the page closes.
+        }
+    }
+
+    groupTitle (id: string): string {
+        switch (id) {
+            case 'ssh': return this.lblGroupSsh
+            case 'sftp': return this.lblGroupSftp
+            default: return this.lblGroupProfiles
+        }
+    }
+
     ////// I18N LABELS //////
     // Every user-visible string of the template lives here, NEVER as an inline
     // literal in the pug: a straight apostrophe (or em dash) inside an inline
@@ -94,6 +143,12 @@ export class SidebarPlusSettingsTabComponent {
     get lblWrapNamesHint (): string { return this.i18n.t('Up to two lines, then the full name in the tooltip.') }
     get lblWrapNamesDesc (): string { return this.i18n.t('Profiles, folders, recents, sessions and tunnels.') }
     get lblFeaturesIntro (): string { return this.i18n.t('Each block switches on independently. Nothing is deleted by turning one off.') }
+    get lblLayoutGrouped (): string { return this.i18n.t('By category') }
+    get lblLayoutFlat (): string { return this.i18n.t('Simple list') }
+    get lblGroupProfiles (): string { return this.i18n.t('Profile list') }
+    get lblGroupSsh (): string { return this.i18n.t('SSH connections') }
+    get lblGroupSftp (): string { return this.i18n.t('SFTP') }
+    get lblNeedsSftp (): string { return this.i18n.t('Needs the SFTP view.') }
     get lblTunnels (): string { return this.i18n.t('Active tunnels') }
     get lblTunnelsHint (): string { return this.i18n.t('Mirrors the state of Tabby port forwarding.') }
     get lblTunnelsDesc (): string { return this.i18n.t('Port forwarding panel and badges on the profiles.') }
@@ -292,6 +347,16 @@ export class SidebarPlusSettingsTabComponent {
      */
     blockOn (key: string, requires?: string): boolean {
         return (this.config.store.sidebarPlus?.[key] ?? true) && this.hostHas(requires)
+    }
+
+    /** The SFTP view switched on and carried by the host: what its card's options and the transfers card hang on. */
+    get sftpOn (): boolean {
+        return this.blockOn('showSftp', 'sftp-panel')
+    }
+
+    /** The transfer manager only exists under the SFTP view; its own switch is kept as set while that view is off. */
+    get transfersOn (): boolean {
+        return this.sftpOn && this.blockOn('showTransfers')
     }
 
     /** Whether the host still provides a precondition. No id means nothing to require. */
