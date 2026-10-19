@@ -3,6 +3,20 @@
 All notable changes to `tabby-better-sidebar` are documented here, one entry
 per npm release. Dates are the npm publication dates.
 
+## 1.0.9 (2026-10-19)
+
+- **Added**: launch a search result from the keyboard (#15). While a search
+  is typed in the filter field, the first result is highlighted and Up and
+  Down move the highlight. Enter opens the highlighted profile in a new tab,
+  Shift+Enter in a new pane of the active tab, next to the focused pane.
+- **Added**: two settings under "Filter bar" in the Features tab. The side
+  of the new pane (`searchSplitSide`, right by default), and whether the
+  search is cleared after a launch (`searchClearOnLaunch`, off by default).
+  When it is kept, the filter field gets the focus back.
+- **Fixed**: saving the config during a search (accepting a host key,
+  toggling a favorite) replaced the results with the whole tree while the
+  text stayed in the field.
+
 ## 1.0.8 (2026-10-17)
 
 - **Fixed**: on macOS with the "thin" window frame, the window buttons no
