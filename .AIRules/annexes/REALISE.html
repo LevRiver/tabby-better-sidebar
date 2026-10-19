@@ -10,7 +10,7 @@
 <h1>Registre du réalisé</h1>
 <p class="muted">Annexe de <a href="../ROADMAP.html">Roadmap</a> (option <code>registre-livrés</code>,
 A-8) — chaque entrée est citée par sa ligne de renvoi dans la roadmap active. Dernière revue :
-2026-10-09.</p>
+2026-10-19.</p>
 
 <p>Ce registre ne porte que l'<strong>état</strong> des chantiers déjà livrés, le plus récent en tête :
 leur fiche est reprise telle qu'elle était dans la roadmap au moment de la bascule, suivie d'une
@@ -20,6 +20,27 @@ rassemblé dans sa section <a href="../ROADMAP.html#restes">« Reste ouvert »</
 daté de chaque livraison est dans le <a href="../AI-HISTORY.html">journal</a>. Les évolutions
 post-livraison s'ajoutent ici en une ligne chacune ; dès qu'une évolution touche l'architecture,
 une convention ou plus d'un fichier, elle rouvre un chantier dans l'actif.</p>
+
+<h3 id="issue-15-recherche-clavier">Lancer un résultat de recherche au clavier (issue #15) <span class="pill done">✅ Livré en 1.0.9 (2026-10-19)</span></h3>
+<p>Demande de bahrampeymani : ouvrir un profil trouvé par la recherche sans quitter le clavier. Codé par la
+session cloud, vérifié et publié sur le poste. Dans le champ de filtre, pendant une recherche, le premier
+résultat est surligné d'office (classe <code>keyboard-active</code>) ; Haut et Bas déplacent le
+surlignage, avec arrêt aux deux bouts, et le curseur reste dans le champ. Seules comptent les lignes de
+profil visibles, dans l'ordre affiché, sans le contenu des dossiers fermés ; un profil présent deux fois
+n'est surligné qu'une fois, la ligne étant repérée par le couple dossier et profil. Entrée ouvre le profil
+dans un nouvel onglet ; Maj+Entrée dans un nouveau volet de l'onglet actif, à côté du volet focalisé
+(<code>tabsService.create()</code> puis <code>addTab()</code>), ou dans un nouvel onglet sans onglet
+partageable. Ctrl, Alt et Meta+Entrée ne sont pas captés.</p>
+<p>Deux réglages sous « Barre de filtre » : <code>searchSplitSide</code> (droite par défaut) et
+<code>searchClearOnLaunch</code> (éteint par défaut ; éteint, la recherche reste et le champ reprend le
+focus). Corrigé au passage : <code>config.changed$</code> appelait <code>loadTreeItems()</code> seul, si
+bien qu'une sauvegarde de config pendant une recherche remplaçait les résultats par l'arbre entier ; ce
+chemin passe par <code>refreshTree()</code>.</p>
+<p>Validé par l'injecteur sur une recherche de 32 résultats dont 15 profils en double (surlignage d'office,
+arrêts aux bouts, une seule ligne surlignée, résultats conservés après une sauvegarde de config, touches
+non captées, Échap), puis au vrai clavier par l'utilisateur (défilement, focus rendu au champ après
+lancement, volets sur les quatre côtés, réglage d'effacement, Ctrl+Entrée dans un terminal).</p>
+<p class="muted">Livré le 2026-10-19 (1.0.9) · Journal : <a href="../AI-HISTORY.html">« Publication de la 1.0.9 » (2026-10-19)</a> · Commits : <code>590d8eb</code> <code>73ddb62</code></p>
 
 <h3 id="issue-13-feux-macos">Feux de fenêtre macOS sur la sidebar (issue #13) <span class="pill done">✅ Livré en 1.0.8 (2026-10-17)</span></h3>
 <p>Constat : avec le cadre « thin » de Tabby, la fenêtre macOS n'a pas de barre de titre ; les trois
