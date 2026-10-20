@@ -24,7 +24,7 @@ ailleurs (CLAUDE.md, ROADMAP.html) — elle ne reflète donc plus l'ordre d'appa
 Les commandes de build/dev restent dans <code>CLAUDE.md</code> à la racine du dépôt — ce fichier ne
 les duplique pas.</p>
 
-<p><strong>Prochain numéro libre : #79.</strong> Qui ajoute un piège prend ce numéro et incrémente
+<p><strong>Prochain numéro libre : #80.</strong> Qui ajoute un piège prend ce numéro et incrémente
 cette ligne dans le même geste. Le #7 est un trou hérité de la restructuration doc ; un numéro
 consommé ne se réattribue jamais, même si son entrée disparaît.</p>
 
@@ -138,6 +138,24 @@ retourne une string.</p>
 n'est interprété que par le compilateur de templates Angular ou en Shadow DOM natif, ni l'un ni
 l'autre ne s'applique ici. Le navigateur ignore silencieusement la règle (aucune erreur). → Cibler
 le nom du tag custom element réel (ex. <code>sidebar-plus-tree { ... }</code>) à la place.</p>
+
+<h3 id="piege-79">#79 : une page de réglages a deux plafonds de 600&nbsp;px, pas un</h3>
+<p>Tabby borne ses pages de réglages à deux niveaux. <code>.content-box</code> (<code>global.scss</code>)
+porte <code>max-width: 600px</code>, et son parent <code>settings-tab-body</code> aussi, par un style
+d'hôte du composant <code>SettingsTabBodyComponent</code> de <code>tabby-settings</code>
+(<code>:host { max-width: 600px }</code>, compilé en <code>[_nghost-*]</code>). Lever le premier seul ne
+change rien à l'écran : la page reste à 600&nbsp;px, et une requête de conteneur posée dessus ne
+franchit jamais son seuil. Constaté sur Tabby 1.0.238.</p>
+<ul>
+<li>Le parent se lève depuis le SCSS global par
+  <code>settings-tab-body:has(&gt; .sidebar-plus-wide-page)</code>, qui ne touche que l'onglet portant
+  la page du plugin et pèse plus lourd que le sélecteur d'attribut d'Angular.</li>
+<li><code>settings-tab-body</code> n'a pas de marge automatique : une page restée à 600&nbsp;px dans
+  un parent élargi garde sa place à gauche, ce qui laisse la page Better Vault inchangée.</li>
+<li>Pour trouver quel ancêtre plafonne, remonter les parents depuis le CDP en lisant
+  <code>getBoundingClientRect().width</code> et le <code>max-width</code> calculé de chacun : le
+  premier qui fait la largeur bornée est le coupable.</li>
+</ul>
 
 <h3 id="piege-56">#56 — Réutiliser une classe stylée par un autre composant ne réutilise rien si son
 sélecteur est descendant de ce composant</h3>

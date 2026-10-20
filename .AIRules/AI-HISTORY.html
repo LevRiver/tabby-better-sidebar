@@ -24,6 +24,27 @@ entrées les plus récentes en tête.</p>
 <code>Date | Hash | Résumé</code>.</p>
 </div>
 
+<h2>Page Fonctionnalités en cartes sur 2 colonnes (2026-10-20)</h2>
+<p>Demande de l'utilisateur, codée par la session cloud (branche
+<code>claude/settings-feature-cards</code>), vérifiée et testée sur le poste. Fiche
+<a href="ROADMAP.html#reglages-cartes">#reglages-cartes</a>. Publication retenue pour la prochaine
+version.</p>
+<table>
+<tr><th>Date</th><th>Hash</th><th>Résumé</th></tr>
+<tr><td>2026-10-20</td><td>(commit en cours)</td>
+<td><strong>Validé</strong> : contrôles par l'injecteur (2 colonnes à 1424&nbsp;px, bascule
+mémorisée, même ordre en liste simple, carte Transferts grisée sans toucher à
+<code>showTransfers</code>, page Better Vault à 600&nbsp;px) et passe manuelle de 13 points de
+l'utilisateur. Piège <a href="AI-CONTEXT.html#piege-79">#79</a> consigné. Fusionné en avance
+rapide.</td></tr>
+<tr><td>2026-10-20</td><td>09ce986</td>
+<td>Plafond de 600&nbsp;px de <code>settings-tab-body</code> levé pour la page du plugin : le premier
+commit ne levait que celui de <code>.content-box</code>, la page restait sur une colonne.</td></tr>
+<tr><td>2026-10-19</td><td>2e59e61</td>
+<td>Une carte par fonctionnalité, 2 colonnes par requête de conteneur, bascule « Par catégorie /
+Liste simple » par poste, carte Transferts à part, onglet Général en cartes.</td></tr>
+</table>
+
 <h2>Publication de la 1.0.9 (2026-10-19)</h2>
 <p>Embarque #15, codée par la session cloud, vérifiée, testée et publiée sur le poste (fiche
 <a href="annexes/REALISE.html#issue-15-recherche-clavier">#issue-15-recherche-clavier</a>).</p>

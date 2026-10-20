@@ -51,7 +51,7 @@ Ce qu'un chantier livré laisse malgré tout ouvert est isolé dans
 <tr><td><a href="annexes/REALISE.html#issue-10-titres-longs">Titres longs sur plusieurs lignes (issue #10)</a></td><td><span class="pill done">✅ Livré en 1.0.7 (2026-10-09)</span></td><td></td></tr>
 <tr><td><a href="annexes/REALISE.html#issue-8-filtre-actifs">Filtre « Actifs » (issue #8)</a></td><td><span class="pill done">✅ Livré en 1.0.7 (2026-10-09)</span></td><td></td></tr>
 <tr><td><a href="annexes/REALISE.html#issue-15-recherche-clavier">Lancer un résultat de recherche au clavier (issue #15)</a></td><td><span class="pill done">✅ Livré en 1.0.9 (2026-10-19)</span></td><td></td></tr>
-<tr><td><a href="#reglages-cartes">Page Fonctionnalités en cartes sur 2 colonnes</a></td><td><span class="pill planned">📋 Codé sur branche, à tester (2026-10-19)</span></td><td></td></tr>
+<tr><td><a href="#reglages-cartes">Page Fonctionnalités en cartes sur 2 colonnes</a></td><td><span class="pill progress">🔧 Validé et fusionné, à publier (2026-10-20)</span></td><td></td></tr>
 <tr><td><a href="annexes/REALISE.html#issue-13-feux-macos">Feux de fenêtre macOS sur la sidebar (issue #13)</a></td><td><span class="pill done">✅ Livré en 1.0.8 (2026-10-17)</span></td><td></td></tr>
 <tr><td><a href="annexes/REALISE.html#issue-14-indentation">Indentation des profils dans les dossiers (issue #14)</a></td><td><span class="pill done">✅ Livré en 1.0.8 (2026-10-17)</span></td><td></td></tr>
 <tr><td><a href="annexes/REALISE.html#pr-ogkaktus">PR #5, #6, #7 d'OGKaktus (tri SFTP, textes en dur, favoris SFTP)</a></td><td><span class="pill done">✅ Livré — 1.0.6 (2026-10-08)</span></td><td>—</td></tr>
@@ -714,6 +714,13 @@ catégorie SFTP, grisée avec la mention « nécessite la vue SFTP » quand cell
 </ul>
 <p>La limite de 600&nbsp;px est levée pour la page de ce plugin seulement : dans le panneau « Better
 Tabby », la page Better Vault garde sa largeur d'origine.</p>
+<p>Codé par la session cloud, vérifié et testé sur le poste. Le premier commit levait seulement le
+plafond de <code>.content-box</code> ; la page restait à 600&nbsp;px, car <code>settings-tab-body</code>
+porte le même plafond sur son propre hôte (piège <a href="AI-CONTEXT.html#piege-79">#79</a>). Corrigé
+sur la branche, puis validé par l'injecteur (2 colonnes à 1424&nbsp;px, bascule mémorisée, carte
+Transferts grisée sans toucher à <code>showTransfers</code>, page Better Vault à 600&nbsp;px) et par
+une passe manuelle de 13 points de l'utilisateur. Fusionné le 2026-10-20, publication retenue pour la
+prochaine version.</p>
 
 <h2>Hors périmètre</h2>
 
