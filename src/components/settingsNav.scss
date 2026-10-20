@@ -50,6 +50,14 @@
     max-width: 1600px;
 }
 
+// The page's parent carries the same cap: SettingsTabBodyComponent styles its
+// own host with `max-width: 600px` (tabby-settings, 1.0.238). Lifted only
+// around this plugin's page; `:has()` outweighs Angular's `[_nghost-*]`
+// attribute selector.
+settings-tab-body:has(> .sidebar-plus-wide-page) {
+    max-width: 1600px;
+}
+
 // Inside the shared "Better Tabby" panel, the other plugins' pages keep the
 // width Tabby gives them: only this plugin's own page is laid out for more.
 .sidebar-plus-host-page:not(.wide) {
