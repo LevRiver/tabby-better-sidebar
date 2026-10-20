@@ -144,16 +144,16 @@ le nom du tag custom element réel (ex. <code>sidebar-plus-tree { ... }</code>) 
 porte <code>max-width: 600px</code>, et son parent <code>settings-tab-body</code> aussi, par un style
 d'hôte du composant <code>SettingsTabBodyComponent</code> de <code>tabby-settings</code>
 (<code>:host { max-width: 600px }</code>, compilé en <code>[_nghost-*]</code>). Lever le premier seul ne
-change rien à l'écran : la page reste à 600&nbsp;px, et une requête de conteneur posée dessus ne
+change rien à l'écran. La page reste à 600&nbsp;px, et une requête de conteneur posée dessus ne
 franchit jamais son seuil. Constaté sur Tabby 1.0.238.</p>
 <ul>
 <li>Le parent se lève depuis le SCSS global par
   <code>settings-tab-body:has(&gt; .sidebar-plus-wide-page)</code>, qui ne touche que l'onglet portant
   la page du plugin et pèse plus lourd que le sélecteur d'attribut d'Angular.</li>
-<li><code>settings-tab-body</code> n'a pas de marge automatique : une page restée à 600&nbsp;px dans
+<li><code>settings-tab-body</code> n'a pas de marge automatique. Une page restée à 600&nbsp;px dans
   un parent élargi garde sa place à gauche, ce qui laisse la page Better Vault inchangée.</li>
 <li>Pour trouver quel ancêtre plafonne, remonter les parents depuis le CDP en lisant
-  <code>getBoundingClientRect().width</code> et le <code>max-width</code> calculé de chacun : le
+  <code>getBoundingClientRect().width</code> et le <code>max-width</code> calculé de chacun. Le
   premier qui fait la largeur bornée est le coupable.</li>
 </ul>
 
