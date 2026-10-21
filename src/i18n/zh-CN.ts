@@ -89,6 +89,11 @@ const zh_CN: Record<string, string> = {
         '已在 {destination} 创建 {folders, plural, other {# 个文件夹}}',
     'Could not send {failed, plural, one {# file} other {# files}} of {total}':
         '无法发送 {total} 个文件中的 {failed, plural, other {# 个}}',
+    'Connection lost during the upload': '上传过程中连接已断开',
+    '{pending, plural, one {# file is} other {# files are}} waiting — reconnect the session to resume':
+        '{pending, plural, other {# 个文件}}等待中 — 重新连接会话以继续',
+    'Connection back — resuming the upload': '连接已恢复 — 继续上传',
+    'Not sent: the connection did not come back': '未发送：连接未恢复',
 
     // sftpBrowser.component.ts — askedToLeave()
     'Dragging folders out is disabled — enable it in Settings → Better Sidebar':

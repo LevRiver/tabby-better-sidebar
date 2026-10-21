@@ -113,6 +113,11 @@ const fr_FR: Record<string, string> = {
     // ICU escape trap) — reworded around it rather than risking the swallow.
     'Could not send {failed, plural, one {# file} other {# files}} of {total}':
         'Envoi impossible pour {failed, plural, one {# fichier} other {# fichiers}} sur {total}',
+    'Connection lost during the upload': 'Connexion perdue pendant l\'envoi',
+    '{pending, plural, one {# file is} other {# files are}} waiting — reconnect the session to resume':
+        '{pending, plural, one {# fichier attend} other {# fichiers attendent}} — reconnectez la session pour reprendre',
+    'Connection back — resuming the upload': 'Connexion rétablie — l\'envoi reprend',
+    'Not sent: the connection did not come back': 'Non envoyé : la connexion n\'est pas revenue',
 
     // sftpBrowser.component.ts — askedToLeave()
     'Dragging folders out is disabled — enable it in Settings → Better Sidebar':

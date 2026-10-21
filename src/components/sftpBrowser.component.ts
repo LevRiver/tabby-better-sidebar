@@ -3,7 +3,7 @@ import { posix } from 'path'
 import { filesize } from 'filesize'
 import { AfterViewChecked, Component, ElementRef, HostListener, Inject, NgZone, OnDestroy, ViewChild } from '@angular/core'
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap'
-import { ConfigService, HTMLFileUpload, LocaleService, NotificationsService, PlatformService, PromptModalComponent } from 'tabby-core'
+import { ConfigService, DirectoryUpload, FileUpload, HTMLFileUpload, LocaleService, NotificationsService, PlatformService, PromptModalComponent } from 'tabby-core'
 import { SFTPContextMenuItemProvider, SFTPFile, SFTPPanelComponent } from 'tabby-ssh'
 import { SidebarPlusEditorService } from '../editorLauncher.service'
 import { electronRemote } from '../electronRemote'
@@ -21,6 +21,7 @@ import { SidebarPlusTempFilesService } from '../tempFiles.service'
 import { SftpTransfers } from '../transfers'
 import { SidebarPlusTransfersService } from '../transfersRegistry.service'
 import { SidebarPlusVisibilityService } from '../visibility.service'
+import { runUploads, SshSession, UploadJob } from '../uploadRunner'
 import { clampInViewport } from '../viewport'
 import { ConfirmModalComponent } from './confirmModal.component'
 
@@ -1609,7 +1610,7 @@ export class SidebarPlusSftpBrowserComponent extends SFTPPanelComponent implemen
                 return
             }
             const failed = await this.runPlan(plan)
-            this.reportDrop(plan, failed, destination)
+            this.reportDrop(plan.files.length, plan.directories.length, failed, destination)
             await this.refreshListing()
         })
     }
@@ -1740,41 +1741,150 @@ export class SidebarPlusSftpBrowserComponent extends SFTPPanelComponent implemen
      * front. The panel's elapsed time counts from the moment a line is
      * registered, so queueing fifty of them at once would show forty-nine
      * clocks running against 0 % — forty-nine transfers that read as stalled
-     * when they have simply not started. The uploads are sequential: one SFTP
-     * channel carries them all.
+     * when they have simply not started. A retry gets a line of its own: the
+     * failed attempt keeps its "échec" and its reason.
      */
     private async runPlan (plan: DropPlan): Promise<string[]> {
-        for (const directory of plan.directories) {
-            // A directory that already exists is the normal case when merging
-            // into an existing tree; the native panel ignores the same failure.
-            await this.sftp.mkdir(directory).catch(() => undefined)
-        }
-        const failed: string[] = []
-        for (const planned of plan.files) {
-            const transfer = new HTMLFileUpload(planned.file)
-            this.registry.track(transfer, false, {
-                remotePath: planned.remotePath,
-                sessionLabel: this._sessionLabel ?? undefined,
-            })
-            try {
-                await this.sftp.upload(planned.remotePath, transfer)
-            } catch (e) {
-                // The registry only ever learns of a cancellation or a
-                // completion: a transfer whose channel died answers false to
-                // both, and its line would stay "en cours" for the rest of the
-                // session. Reported per file here, and summed up once below —
-                // one toast per failure would bury the list under itself when
-                // the transport is what died.
-                this.registry.markFailed(transfer, String((e as Error)?.message ?? e))
-                failed.push(planned.file.name)
-            }
-        }
-        return failed
+        return await this.runJobs(plan.directories, plan.files.map(planned => ({
+            name: planned.file.name,
+            remotePath: planned.remotePath,
+            open: async () => {
+                const transfer = new HTMLFileUpload(planned.file)
+                this.registry.track(transfer, false, {
+                    remotePath: planned.remotePath,
+                    sessionLabel: this._sessionLabel ?? undefined,
+                })
+                return transfer
+            },
+        })))
     }
 
-    private reportDrop (plan: DropPlan, failed: string[], destination: string): void {
-        const sent = plan.files.length - failed.length
-        const folders = plan.directories.length
+    /**
+     * Set by the host panel: waits for the tab this panel serves to come back
+     * on a new transport. Null for a panel nobody hosts, which then gives up
+     * on a lost transport straight away.
+     */
+    awaitReconnect: ((lost: SshSession) => Promise<SshSession|null>)|null = null
+
+    /**
+     * Sends through `runUploads()` — see there for the transport hold, the
+     * retries and the wait for a reconnection.
+     *
+     * Captures `session`, `sftp` and the reconnection hook up front: the host
+     * panel rebuilds this component when the tab comes back on a new
+     * transport, and a run in flight outlives the instance that started it.
+     */
+    private async runJobs (directories: string[], jobs: UploadJob[]): Promise<string[]> {
+        const awaitReconnect = this.awaitReconnect
+        return await runUploads(this.session, this.sftp, directories, jobs, {
+            // The registry only ever learns of a cancellation or a completion:
+            // a transfer whose channel died answers false to both, and its
+            // line would stay "en cours" for the rest of the session. Reported
+            // per attempt here, and summed up once by the caller — one toast
+            // per failure would bury the list under itself when the transport
+            // is what died.
+            attemptFailed: (transfer, reason) => this.registry.markFailed(transfer, reason),
+            reconnect: async lost => awaitReconnect ? await awaitReconnect(lost) : null,
+            waiting: pending => this.notices.error(
+                this.i18n.t('Connection lost during the upload'),
+                this.i18n.t(
+                    '{pending, plural, one {# file is} other {# files are}} waiting — reconnect the session to resume',
+                    { pending },
+                ),
+            ),
+            resumed: () => this.notices.notice(this.i18n.t('Connection back — resuming the upload')),
+        })
+    }
+
+    /**
+     * The file picker, through the same runner as a drop.
+     *
+     * The inherited one starts every file at once (`Promise.all` on a single
+     * channel) and catches nothing: a transport lost halfway left every line
+     * hanging and said nothing about which files never arrived.
+     */
+    override async upload (): Promise<void> {
+        const transfers = await this.platformSvc.startUpload({ multiple: true })
+        if (!transfers.length) {
+            return
+        }
+        const destination = this.path
+        const jobs = transfers.map(transfer => this.pickedJob(transfer, posix.join(destination, transfer.getName())))
+        const failed = await this.runJobs([], jobs)
+        this.reportDrop(jobs.length, 0, failed, destination)
+        await this.refreshListing()
+    }
+
+    /** Same as `upload()`, for a folder: its tree flattened into directories to create and files to send. */
+    override async uploadFolder (): Promise<void> {
+        const root = await this.platformSvc.startUploadDirectory()
+        const destination = this.path
+        const directories: string[] = []
+        const jobs: UploadJob[] = []
+        const walk = (directory: DirectoryUpload, at: string): void => {
+            for (const child of directory.getChildrens()) {
+                const target = posix.join(at, child.getName())
+                if (child instanceof DirectoryUpload) {
+                    directories.push(target)
+                    walk(child, target)
+                } else {
+                    jobs.push(this.pickedJob(child, target))
+                }
+            }
+        }
+        walk(root, destination)
+        if (!jobs.length && !directories.length) {
+            return
+        }
+        const failed = await this.runJobs(directories, jobs)
+        this.reportDrop(jobs.length, directories.length, failed, destination)
+        await this.refreshListing()
+    }
+
+    /**
+     * A file the platform picker already opened — and registered, through
+     * `fileTransferStarted$`, before we ever held it.
+     *
+     * The first attempt uses that transfer. A retry reopens the same local
+     * path with `startUpload(…, [path])`, which skips the dialog (piège #48);
+     * `filePath` is the installed `ElectronFileUpload`'s own field, absent from
+     * the typings. A transfer never reached — the run gave up first — is
+     * released by `discard()`: it holds an open file and a power-save blocker
+     * until closed.
+     */
+    private pickedJob (first: FileUpload, remotePath: string): UploadJob {
+        const context = { remotePath, sessionLabel: this._sessionLabel ?? undefined }
+        let unused: FileUpload|null = first
+        return {
+            name: first.getName(),
+            remotePath,
+            open: async () => {
+                if (unused) {
+                    const transfer = unused
+                    unused = null
+                    this.registry.attachContext(transfer, context)
+                    return transfer
+                }
+                const localPath = (first as unknown as { filePath?: string }).filePath
+                const [again] = localPath ? await this.platformSvc.startUpload({ multiple: false }, [localPath]) : []
+                if (!again) {
+                    throw new Error(this.i18n.t('The upload of {name} could not start', { name: first.getName() }))
+                }
+                this.registry.attachContext(again, context)
+                return again
+            },
+            discard: () => {
+                if (unused) {
+                    this.registry.markFailed(unused, this.i18n.t('Not sent: the connection did not come back'))
+                    unused.close()
+                    unused = null
+                }
+            },
+        }
+    }
+
+    private reportDrop (total: number, folders: number, failed: string[], destination: string): void {
+        const sent = total - failed.length
         if (sent > 0) {
             this.notices.notice(folders > 0
                 ? this.i18n.t(
@@ -1795,7 +1905,7 @@ export class SidebarPlusSftpBrowserComponent extends SFTPPanelComponent implemen
             this.notices.error(
                 this.i18n.t(
                     'Could not send {failed, plural, one {# file} other {# files}} of {total}',
-                    { failed: failed.length, total: plan.files.length },
+                    { failed: failed.length, total },
                 ),
                 failed.slice(0, SidebarPlusSftpBrowserComponent.COLLISIONS_NAMED).join(', '),
             )

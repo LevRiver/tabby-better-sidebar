@@ -33,6 +33,14 @@ import { SidebarPlusSftpBrowserComponent } from './sftpBrowser.component'
 const SESSION_LOSS_GRACE_MS = 3000
 
 /**
+ * How long an upload whose transport died waits for the tab to reconnect
+ * before giving up on the files still to send — long enough to notice the
+ * dropped link and click Reconnect, bounded so a session nobody revives does
+ * not leave a run pending forever.
+ */
+const RECONNECT_WAIT_MS = 5 * 60 * 1000
+
+/**
  * Hosts the SFTP browser inside the sidebar, bound to whatever SSH tab
  * currently has focus.
  *
@@ -541,10 +549,36 @@ export class SidebarPlusSftpComponent implements OnInit, OnDestroy {
             // favorites menu says so rather than filing under a made-up key.
             ref.instance.profileId = (tab as unknown as { profile?: { id?: string } }).profile?.id ?? null
             ref.instance.closed.subscribe(() => this.closed.emit())
+            ref.instance.awaitReconnect = lost => this.awaitFreshSession(tab, lost)
             this.panels.set(tab, ref)
         }
         this.appRef.attachView(ref.hostView)
         this.panelContainer.nativeElement.appendChild(this.rootNodeOf(ref))
+    }
+
+    /**
+     * Waits for `tab` to come back on a transport other than `lost`, for an
+     * upload that lost its own halfway.
+     *
+     * Polled rather than observed: a reconnect replaces `sshSession` on the
+     * same tab object and emits nothing a plugin can subscribe to — the same
+     * reason sync() compares sessions on its tick. Gives up when the tab is
+     * closed, or after `RECONNECT_WAIT_MS`: Tabby reconnects on its own only
+     * when the profile says so, otherwise it waits for a click on Reconnect.
+     */
+    private async awaitFreshSession (tab: SSHTabComponent, lost: SSHTabComponent['sshSession']): Promise<NonNullable<SSHTabComponent['sshSession']>|null> {
+        const deadline = Date.now() + RECONNECT_WAIT_MS
+        while (Date.now() < deadline) {
+            if (!getAllOpenTabs(this.app).includes(tab)) {
+                return null
+            }
+            const session = tab.sshSession
+            if (session && session !== lost && isLiveSSHTab(tab)) {
+                return session
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+        return null
     }
 
     /**

@@ -88,6 +88,11 @@ const es_ES: Record<string, string> = {
         '{folders, plural, one {# carpeta creada} other {# carpetas creadas}} en {destination}',
     'Could not send {failed, plural, one {# file} other {# files}} of {total}':
         'No se pudo enviar {failed, plural, one {# archivo} other {# archivos}} de {total}',
+    'Connection lost during the upload': 'Conexión perdida durante el envío',
+    '{pending, plural, one {# file is} other {# files are}} waiting — reconnect the session to resume':
+        '{pending, plural, one {# archivo espera} other {# archivos esperan}} — vuelva a conectar la sesión para reanudar',
+    'Connection back — resuming the upload': 'Conexión restablecida — se reanuda el envío',
+    'Not sent: the connection did not come back': 'No enviado: la conexión no se restableció',
 
     // sftpBrowser.component.ts — askedToLeave()
     'Dragging folders out is disabled — enable it in Settings → Better Sidebar':
