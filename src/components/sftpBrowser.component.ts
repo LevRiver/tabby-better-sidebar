@@ -21,8 +21,10 @@ import { SidebarPlusTempFilesService } from '../tempFiles.service'
 import { SftpTransfers } from '../transfers'
 import { SidebarPlusTransfersService } from '../transfersRegistry.service'
 import { SidebarPlusVisibilityService } from '../visibility.service'
+import { RsyncRequest, SidebarPlusRsyncService } from '../rsync.service'
 import { clampInViewport } from '../viewport'
 import { ConfirmModalComponent } from './confirmModal.component'
+import { RsyncModalComponent } from './rsyncModal.component'
 
 /**
  * One rendered row, computed once instead of on every change detection pass.
@@ -368,6 +370,7 @@ export class SidebarPlusSftpBrowserComponent extends SFTPPanelComponent implemen
         private dragServer: SidebarPlusDragOutServer,
         private registry: SidebarPlusTransfersService,
         private visibility: SidebarPlusVisibilityService,
+        private rsync: SidebarPlusRsyncService,
         @Inject(SFTPContextMenuItemProvider) contextMenuProviders: SFTPContextMenuItemProvider[],
     ) {
         super(ngbModalService, notify, platform, contextMenuProviders)
@@ -2067,6 +2070,12 @@ export class SidebarPlusSftpBrowserComponent extends SFTPPanelComponent implemen
                 click: () => { void this.openEntry(item, 'openWith') },
             })
         }
+        if (this.isDirectoryEntry(item)) {
+            items.push({
+                label: this.i18n.t('Synchronize with rsync...'),
+                click: () => { void this.openRsync(item.fullPath) },
+            })
+        }
         items.push({
             label: this.i18n.t('Rename...'),
             click: () => { void this.renameEntry(item) },
@@ -2083,6 +2092,36 @@ export class SidebarPlusSftpBrowserComponent extends SFTPPanelComponent implemen
             })
         }
         this.platform.popupContextMenu(items, event)
+    }
+
+    /**
+     * Asks what to synchronize with `remotePath`, then hands rsync its own tab.
+     *
+     * The tab runs over *this* panel's SSH session — see rsync.service.ts —
+     * so it keeps working when the panel moves on to another tab.
+     */
+    async openRsync (remotePath: string): Promise<void> {
+        const binary = this.rsync.locate()
+        if (!binary) {
+            this.notices.error(this.i18n.t('rsync was not found on this computer'), this.rsync.installHint())
+            return
+        }
+        const modal = this.ngbModalService.open(RsyncModalComponent, { size: 'lg' })
+        modal.componentInstance.binary = binary
+        modal.componentInstance.hostLabel = this._sessionLabel ?? ''
+        modal.componentInstance.remotePath = remotePath
+        modal.componentInstance.suggestLocal = (remote: string) => this.rsync.suggestLocalFolder(this.profileId, remote)
+        const request: RsyncRequest|null = await modal.result.catch(() => null)
+        if (!request) {
+            return
+        }
+        const title = `rsync · ${this._sessionLabel ?? posix.basename(request.remotePath)}`
+        try {
+            await this.rsync.launch(this.session, request, title)
+            this.rsync.rememberLocalFolder(this.profileId, request.remotePath, request.localPath)
+        } catch (e) {
+            this.notices.error(this.i18n.t('rsync could not start'), String((e as Error)?.message ?? e))
+        }
     }
 
     /**

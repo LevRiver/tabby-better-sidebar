@@ -646,6 +646,31 @@ const zh_CN: Record<string, string> = {
     '{name}: arrival not verified — {reason}': '{name}：未验证是否送达——{reason}',
     'The upload of {name} could not start': '{name} 的上传未能开始',
 
+    // rsyncModal.component.pug, sftpBrowser.component.ts, rsync.service.ts — rsync bridge
+    'Synchronize with rsync: {host}': '使用 rsync 同步：{host}',
+    'Local → server (upload)': '本地 → 服务器（上传）',
+    'Server → local (download)': '服务器 → 本地（下载）',
+    'Local folder': '本地文件夹',
+    'Choose the local folder': '选择本地文件夹',
+    'Remote folder': '远程文件夹',
+    'Delete files missing from the source (--delete)': '删除源中不存在的文件（--delete）',
+    'Dry run: only list what would change (-n)': '试运行：仅列出将会变更的内容（-n）',
+    'The contents of the source folder are synchronized into the destination folder.': '源文件夹的内容将同步到目标文件夹。',
+    'Start': '开始',
+    'Synchronize with rsync...': '使用 rsync 同步...',
+    'rsync was not found on this computer': '在此计算机上未找到 rsync',
+    'rsync could not start': 'rsync 未能启动',
+    'The rsync bridge needs Perl ({path})': 'rsync 桥接需要 Perl（{path}）',
+    'The SSH session is not ready': 'SSH 会话尚未就绪',
+    'The rsync tab could not be opened': '无法打开 rsync 标签页',
+    'Permissions on the server': '服务器上的权限',
+    'Readable by the web server (files +r, folders +rx for everyone)': 'Web 服务器可读（文件 +r，文件夹 +rx，对所有人）',
+    'Same as the local files': '与本地文件相同',
+    'Install rsync for Windows, e.g. cwRsync or MSYS2 (pacman -S rsync), and put rsync.exe on the PATH.': '请安装 Windows 版 rsync，例如 cwRsync 或 MSYS2（pacman -S rsync），并将 rsync.exe 加入 PATH。',
+    'Install rsync with your package manager.': '请使用系统的包管理器安装 rsync。',
+    'Install rsync, e.g. with Homebrew: brew install rsync': '请安装 rsync，例如使用 Homebrew：brew install rsync',
+    '{path} does not exist': '{path} 不存在',
+
 }
 
 export default zh_CN

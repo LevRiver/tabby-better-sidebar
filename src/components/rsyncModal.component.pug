@@ -1,0 +1,77 @@
+.modal-header
+    h5.modal-title.no-wrap {{ 'Synchronize with rsync: {host}' | translate:{ host: hostLabel } }}
+    button.btn-close((click)='cancel()')
+
+.modal-body
+    .mb-3
+        .form-check
+            input.form-check-input#rsync-upload(
+                type='radio',
+                name='rsync-direction',
+                value='upload',
+                [(ngModel)]='direction',
+                (ngModelChange)='refreshPreview()'
+            )
+            label.form-check-label(for='rsync-upload') {{ 'Local → server (upload)' | translate }}
+        .form-check
+            input.form-check-input#rsync-download(
+                type='radio',
+                name='rsync-direction',
+                value='download',
+                [(ngModel)]='direction',
+                (ngModelChange)='refreshPreview()'
+            )
+            label.form-check-label(for='rsync-download') {{ 'Server → local (download)' | translate }}
+
+    .mb-3
+        label.form-label {{ 'Local folder' | translate }}
+        .input-group
+            input.form-control(
+                type='text',
+                [(ngModel)]='localPath',
+                (ngModelChange)='refreshPreview()'
+            )
+            button.btn.btn-secondary(type='button', (click)='pickLocalFolder()', [title]="'Choose the local folder' | translate")
+                .fa.fa-fw.fas.fa-folder-open
+
+    .mb-3
+        label.form-label {{ 'Remote folder' | translate }}
+        input.form-control(
+            type='text',
+            [(ngModel)]='remotePath',
+            (ngModelChange)='remotePathChanged()'
+        )
+
+    .mb-3(*ngIf='direction === "upload"')
+        label.form-label {{ 'Permissions on the server' | translate }}
+        select.form-select(
+            [(ngModel)]='permissions',
+            (ngModelChange)='refreshPreview()'
+        )
+            option(value='web') {{ 'Readable by the web server (files +r, folders +rx for everyone)' | translate }}
+            option(value='preserve') {{ 'Same as the local files' | translate }}
+
+    .form-check
+        input.form-check-input#rsync-delete(
+            type='checkbox',
+            [(ngModel)]='deleteExtra',
+            (ngModelChange)='refreshPreview()'
+        )
+        label.form-check-label(for='rsync-delete') {{ 'Delete files missing from the source (--delete)' | translate }}
+    .form-check.mb-3
+        input.form-check-input#rsync-dry-run(
+            type='checkbox',
+            [(ngModel)]='dryRun',
+            (ngModelChange)='refreshPreview()'
+        )
+        label.form-check-label(for='rsync-dry-run') {{ 'Dry run: only list what would change (-n)' | translate }}
+
+    .text-muted.small.mb-1 {{ 'The contents of the source folder are synchronized into the destination folder.' | translate }}
+    code.d-block.small.text-break {{ commandPreview }}
+
+.modal-footer
+    button.btn.btn-secondary((click)='cancel()') {{ 'Cancel' | translate }}
+    button.btn.btn-primary(
+        [disabled]='!localPath.trim() || !remotePath.trim()',
+        (click)='start()'
+    ) {{ 'Start' | translate }}

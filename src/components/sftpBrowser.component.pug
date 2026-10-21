@@ -64,6 +64,8 @@
         .fa.fa-fw.fas.fa-file-upload
     button.btn.btn-link.btn-sm.sftp-tool(type='button', (click)='uploadFolder()', [title]="'Send a folder to the server' | translate")
         .fa.fa-fw.fas.fa-file-import
+    button.btn.btn-link.btn-sm.sftp-tool(type='button', (click)='openRsync(path)', [title]="'Synchronize with rsync...' | translate")
+        .fa.fa-fw.fas.fa-exchange-alt
 
 .sftp-filter-bar.d-flex.align-items-center(*ngIf='showFilter')
     input.form-control.form-control-sm.flex-grow-1(

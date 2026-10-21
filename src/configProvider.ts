@@ -176,6 +176,10 @@ export class SidebarPlusConfigProvider extends ConfigProvider {
             // whole record is copied and reassigned on every change — a
             // nested object mutated in place does not persist (piège #23).
             sftpFavorites: {} as Record<string, string[]>,
+            // The local folder last synchronized with each remote folder, by
+            // profile id then normalized remote path — what prefills the
+            // rsync dialog. Copied and reassigned like the favorites above.
+            rsyncLocalFolders: {} as Record<string, Record<string, string>>,
             // Sort order of the SFTP listing: which column, and which way.
             // Two flat keys rather than one `{ key, descending }` object —
             // a nested object mutated in place does not persist (piège #23).

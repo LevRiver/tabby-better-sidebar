@@ -645,6 +645,31 @@ const es_ES: Record<string, string> = {
     '{name}: arrival not verified — {reason}': '{name}: llegada no verificada — {reason}',
     'The upload of {name} could not start': 'La subida de {name} no pudo iniciarse',
 
+    // rsyncModal.component.pug, sftpBrowser.component.ts, rsync.service.ts — rsync bridge
+    'Synchronize with rsync: {host}': 'Sincronizar con rsync: {host}',
+    'Local → server (upload)': 'Local → servidor (subida)',
+    'Server → local (download)': 'Servidor → local (descarga)',
+    'Local folder': 'Carpeta local',
+    'Choose the local folder': 'Elegir la carpeta local',
+    'Remote folder': 'Carpeta remota',
+    'Delete files missing from the source (--delete)': 'Eliminar archivos que faltan en el origen (--delete)',
+    'Dry run: only list what would change (-n)': 'Simulación: solo listar lo que cambiaría (-n)',
+    'The contents of the source folder are synchronized into the destination folder.': 'El contenido de la carpeta de origen se sincroniza en la carpeta de destino.',
+    'Start': 'Iniciar',
+    'Synchronize with rsync...': 'Sincronizar con rsync...',
+    'rsync was not found on this computer': 'No se encontró rsync en este equipo',
+    'rsync could not start': 'rsync no pudo iniciarse',
+    'The rsync bridge needs Perl ({path})': 'El puente rsync necesita Perl ({path})',
+    'The SSH session is not ready': 'La sesión SSH no está lista',
+    'The rsync tab could not be opened': 'No se pudo abrir la pestaña de rsync',
+    'Permissions on the server': 'Permisos en el servidor',
+    'Readable by the web server (files +r, folders +rx for everyone)': 'Legibles por el servidor web (archivos +r, carpetas +rx para todos)',
+    'Same as the local files': 'Iguales que los archivos locales',
+    'Install rsync for Windows, e.g. cwRsync or MSYS2 (pacman -S rsync), and put rsync.exe on the PATH.': 'Instale rsync para Windows, por ejemplo cwRsync o MSYS2 (pacman -S rsync), y añada rsync.exe al PATH.',
+    'Install rsync with your package manager.': 'Instale rsync con su gestor de paquetes.',
+    'Install rsync, e.g. with Homebrew: brew install rsync': 'Instale rsync, por ejemplo con Homebrew: brew install rsync',
+    '{path} does not exist': '{path} no existe',
+
 }
 
 export default es_ES
